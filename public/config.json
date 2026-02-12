@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "background": {
+    "imageUrl": "",
+    "opacity": 0.4,
+    "color": "#1a1a2e"
+  },
+  "search": {
+    "enabled": true,
+    "placeholder": "Filter links..."
+  },
+  "modules": [
+    {
+      "type": "links",
+      "title": "Favorites",
+      "columns": 3,
+      "links": [
+        { "url": "https://github.com", "label": "GitHub" },
+        { "url": "https://news.ycombinator.com", "label": "Hacker News" },
+        { "url": "https://youtube.com", "label": "YouTube" }
+      ]
+    }
+  ]
+}
+
