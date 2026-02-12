@@ -5,13 +5,24 @@ interface SearchBarProps {
   enabled: boolean;
   placeholder: string;
   modules: ModuleConfig[];
+  onNavigate: (url: string, label: string) => void;
 }
 
 interface MatchedLink extends LinkConfig {
   moduleTitle: string;
+  favicon: string;
 }
 
-export function SearchBar({ enabled, placeholder, modules }: SearchBarProps) {
+function getFaviconUrl(url: string): string {
+  try {
+    const domain = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+  } catch {
+    return '';
+  }
+}
+
+export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const listRef = useRef<HTMLUListElement>(null);
@@ -22,7 +33,7 @@ export function SearchBar({ enabled, placeholder, modules }: SearchBarProps) {
     return modules.flatMap((m) =>
       m.links
         .filter((link) => link.label.toLowerCase().includes(q))
-        .map((link) => ({ ...link, moduleTitle: m.title }))
+        .map((link) => ({ ...link, moduleTitle: m.title, favicon: link.icon || getFaviconUrl(link.url) }))
     );
   }, [query, modules]);
 
@@ -47,7 +58,7 @@ export function SearchBar({ enabled, placeholder, modules }: SearchBarProps) {
       e.preventDefault();
       setSelectedIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === 'Enter' && matches[selectedIndex]) {
-      window.location.href = matches[selectedIndex].url;
+      onNavigate(matches[selectedIndex].url, matches[selectedIndex].label);
     }
   }
 
@@ -70,8 +81,17 @@ export function SearchBar({ enabled, placeholder, modules }: SearchBarProps) {
                 <a
                   className={`search-dropdown-item${i === selectedIndex ? ' selected' : ''}`}
                   href={link.url}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate(link.url, link.label);
+                  }}
                 >
-                  <span className="search-dropdown-label">{link.label}</span>
+                  <span className="search-dropdown-left">
+                    {link.favicon && (
+                      <img className="search-dropdown-favicon" src={link.favicon} alt="" width={16} height={16} />
+                    )}
+                    <span className="search-dropdown-label">{link.label}</span>
+                  </span>
                   <span className="search-dropdown-module">{link.moduleTitle}</span>
                 </a>
               </li>

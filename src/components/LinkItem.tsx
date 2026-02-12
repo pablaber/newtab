@@ -2,6 +2,7 @@ import type { LinkConfig } from '../types/config.ts';
 
 interface LinkItemProps {
   link: LinkConfig;
+  onNavigate: (url: string, label: string) => void;
 }
 
 function getFaviconUrl(url: string): string {
@@ -13,11 +14,18 @@ function getFaviconUrl(url: string): string {
   }
 }
 
-export function LinkItem({ link }: LinkItemProps) {
+export function LinkItem({ link, onNavigate }: LinkItemProps) {
   const iconSrc = link.icon || getFaviconUrl(link.url);
 
   return (
-    <a href={link.url} className="link-item">
+    <a
+      href={link.url}
+      className="link-item"
+      onClick={(e) => {
+        e.preventDefault();
+        onNavigate(link.url, link.label);
+      }}
+    >
       {iconSrc && (
         <img
           className="link-item-icon"
