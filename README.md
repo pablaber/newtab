@@ -4,14 +4,25 @@ A minimal, customizable new-tab homepage built with React and TypeScript. It rea
 
 ![Screenshot placeholder](screenshot.png)
 
-## Quick Start
+## Installation
+
+```bash
+docker run -d \
+  -p 3541:80 \
+  -v /path/to/your/config.json:/usr/share/nginx/html/config.json:ro \
+  tastinggrounds/newtab
+```
+
+Then open http://localhost:3541. See the [Configuration](#configuration) section below for `config.json` options.
+
+## Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser. Edit `public/config.json` to customize.
+Open http://localhost:3541 in your browser. Edit `public/config.json` to customize.
 
 ## Configuration
 
@@ -103,12 +114,12 @@ Build and run with Docker:
 docker build -f docker/Dockerfile -t newtab .
 
 docker run -d \
-  -p 8080:80 \
+  -p 3541:80 \
   -v /path/to/your/config.json:/usr/share/nginx/html/config.json:ro \
   newtab
 ```
 
-Then open http://localhost:8080.
+Then open http://localhost:3541.
 
 The `config.json` is volume-mounted so you can update it without rebuilding the image.
 

@@ -28,6 +28,6 @@ Single-page React new-tab homepage. Reads config from `public/config.json`.
 
 ## Commands
 
-- `npm run dev` — start dev server
+- `npm run dev` — start dev server (port 3541)
 - `npm run build` — typecheck + production build
 - `npm run lint` — eslint
