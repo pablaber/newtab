@@ -30,7 +30,7 @@ src/
 │       ├── index.ts
 │       ├── ConfigEditorScreen.tsx — header, tab bar, import/export modal
 │       └── components/
-│           ├── BackgroundTab.tsx  — background settings (image, color, opacity)
+│           ├── GeneralTab.tsx    — general settings (background + search placeholder)
 │           └── LinksTab.tsx      — section + link CRUD with reordering & validation
 ├── hooks/
 │   └── useConfig.ts       — fetches /config.json, persists to localStorage

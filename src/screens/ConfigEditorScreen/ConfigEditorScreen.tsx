@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { AppConfig, BackgroundConfig } from '../../types/config.ts';
-import { BackgroundTab } from './components/BackgroundTab.tsx';
+import { GeneralTab } from './components/GeneralTab.tsx';
 import { LinksTab } from './components/LinksTab.tsx';
 
 const STORAGE_KEY = 'newtab-config';
@@ -38,7 +38,7 @@ function validateConfig(value: unknown): value is AppConfig {
 }
 
 type ImportExportPanel = 'none' | 'export' | 'import';
-type Tab = 'background' | 'links';
+type Tab = 'general' | 'links';
 
 interface ConfigEditorProps {
   config: AppConfig;
@@ -48,7 +48,7 @@ interface ConfigEditorProps {
 }
 
 export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEditorProps) {
-  const [tab, setTab] = useState<Tab>('background');
+  const [tab, setTab] = useState<Tab>('general');
   const [activePanel, setActivePanel] = useState<ImportExportPanel>('none');
   const [exportString, setExportString] = useState('');
   const [copied, setCopied] = useState(false);
@@ -164,10 +164,10 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
 
       <div className="config-editor-tabs">
         <button
-          className={`config-editor-tab${tab === 'background' ? ' active' : ''}`}
-          onClick={() => setTab('background')}
+          className={`config-editor-tab${tab === 'general' ? ' active' : ''}`}
+          onClick={() => setTab('general')}
         >
-          Background
+          General
         </button>
         <button
           className={`config-editor-tab${tab === 'links' ? ' active' : ''}`}
@@ -177,8 +177,8 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
         </button>
       </div>
 
-      {tab === 'background' && (
-        <BackgroundTab
+      {tab === 'general' && (
+        <GeneralTab
           config={config}
           onSave={onSave}
           onClose={onClose}
