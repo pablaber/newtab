@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0](https://github.com/pablaber/newtab/compare/v0.4.1...v0.5.0) (2026-02-13)
+
+
+### Features
+
+* add gradient background support ([#20](https://github.com/pablaber/newtab/issues/20)) ([8d7ce20](https://github.com/pablaber/newtab/commit/8d7ce203ba51e526f73ebf0c76d1e0bd5b88e96f))
+* add hidden sections and links support ([#18](https://github.com/pablaber/newtab/issues/18)) ([5c77ec3](https://github.com/pablaber/newtab/commit/5c77ec33e93ad0df64fc97c11f2f0e712dd3c17b))
+
+
+### Miscellaneous
+
+* use github app token for release-please ([#21](https://github.com/pablaber/newtab/issues/21)) ([bcb1a74](https://github.com/pablaber/newtab/commit/bcb1a740edd0bf66c8775fc8bfd49aea98e23cf0))
+
 ## [0.4.1](https://github.com/pablaber/newtab/compare/v0.4.0...v0.4.1) (2026-02-13)
 
 
