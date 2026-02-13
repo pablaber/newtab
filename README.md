@@ -29,6 +29,13 @@ npm run dev
 
 Open http://localhost:3542 in your browser. Use the settings page to customize, or edit `public/config.json` to change the default seed config.
 
+### Testing
+
+```bash
+npm run test          # run tests once
+npm run test:watch    # run tests in watch mode
+```
+
 ## Configuration
 
 Configuration is stored in the browser's localStorage. On first load (when no localStorage data exists), the app fetches `config.json` to seed the initial config. All subsequent changes are saved to localStorage and the seed file is not read again. The settings page has two tabs:
