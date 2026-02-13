@@ -62,8 +62,8 @@
 .navigating-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  border-top-color: rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(var(--fg), 0.15);
+  border-top-color: rgba(var(--fg), 0.6);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -92,21 +92,21 @@
   padding: 14px 20px;
   font-size: 1.1rem;
   font-family: inherit;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgb(var(--fg));
+  background: rgba(var(--fg), 0.08);
+  border: 1px solid rgba(var(--fg), 0.1);
   border-radius: 12px;
   outline: none;
   transition: background 150ms, border-color 150ms;
 }
 
 .search-bar::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(var(--fg), 0.4);
 }
 
 .search-bar:focus {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--fg), 0.12);
+  border-color: rgba(var(--fg), 0.2);
 }
 
 /* Search Dropdown */
@@ -118,8 +118,8 @@
   margin: 4px 0 0;
   padding: 4px 0;
   list-style: none;
-  background: rgba(30, 30, 30, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(var(--dropdown-bg), 0.95);
+  border: 1px solid rgba(var(--fg), 0.12);
   border-radius: 12px;
   max-height: 320px;
   overflow-y: auto;
@@ -132,17 +132,17 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(var(--fg), 0.85);
   text-decoration: none;
   transition: background 100ms;
 }
 
 .search-dropdown-item.selected {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg), 0.1);
 }
 
 .search-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg), 0.08);
 }
 
 .search-dropdown-left {
@@ -179,8 +179,8 @@
 
 /* Link Module */
 .link-module {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg), 0.05);
+  border: 1px solid rgba(var(--fg), 0.08);
   border-radius: 12px;
   padding: 20px;
   min-width: 0;
@@ -209,12 +209,12 @@
   gap: 10px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--fg), 0.04);
   transition: background 150ms;
 }
 
 .link-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg), 0.1);
 }
 
 .link-item-icon {
@@ -238,17 +238,17 @@
   width: 40px;
   height: 40px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(var(--fg), 0.08);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.5);
+  background: rgba(var(--fg), 0.05);
+  color: rgba(var(--fg), 0.5);
   cursor: pointer;
   transition: background 150ms, color 150ms;
 }
 
 .config-button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.8);
 }
 
 /* Config Editor */
@@ -278,22 +278,22 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(var(--fg), 0.08);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.5);
+  background: rgba(var(--fg), 0.05);
+  color: rgba(var(--fg), 0.5);
   cursor: pointer;
   transition: background 150ms, color 150ms;
 }
 
 .config-editor-back:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.8);
 }
 
 .config-editor-section {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg), 0.05);
+  border: 1px solid rgba(var(--fg), 0.08);
   border-radius: 12px;
   padding: 20px;
 }
@@ -324,9 +324,9 @@
   padding: 10px 14px;
   font-size: 0.95rem;
   font-family: inherit;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgb(var(--fg));
+  background: rgba(var(--fg), 0.08);
+  border: 1px solid rgba(var(--fg), 0.1);
   border-radius: 8px;
   outline: none;
   transition: background 150ms, border-color 150ms;
@@ -334,12 +334,12 @@
 }
 
 .config-editor-input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(var(--fg), 0.3);
 }
 
 .config-editor-input:focus {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--fg), 0.12);
+  border-color: rgba(var(--fg), 0.2);
 }
 
 .config-editor-input:disabled {
@@ -363,15 +363,15 @@
   font-family: inherit;
   border: none;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
+  background: rgba(var(--fg), 0.1);
+  color: rgba(var(--fg), 0.7);
   cursor: pointer;
   transition: background 150ms;
   flex-shrink: 0;
 }
 
 .config-editor-btn-apply:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(var(--fg), 0.18);
 }
 
 .config-editor-btn-apply:disabled {
@@ -398,7 +398,7 @@
 
 .config-editor-range {
   width: 100%;
-  accent-color: rgba(255, 255, 255, 0.6);
+  accent-color: rgba(var(--fg), 0.6);
 }
 
 .config-editor-range:disabled {
@@ -410,9 +410,9 @@
   width: 48px;
   height: 36px;
   padding: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(var(--fg), 0.1);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg), 0.08);
   cursor: pointer;
 }
 
@@ -433,21 +433,21 @@
 }
 
 .config-editor-btn-save {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: rgba(var(--fg), 0.15);
+  color: rgb(var(--fg));
 }
 
 .config-editor-btn-save:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(var(--fg), 0.25);
 }
 
 .config-editor-btn-cancel {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.6);
+  background: rgba(var(--fg), 0.05);
+  color: rgba(var(--fg), 0.6);
 }
 
 .config-editor-btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg), 0.1);
 }
 
 /* Responsive */
