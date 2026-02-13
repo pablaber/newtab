@@ -3,7 +3,12 @@
   "background": {
     "imageUrl": "",
     "opacity": 0.4,
-    "color": "#1a1a2e"
+    "color": "#1a1a2e",
+    "gradient": {
+      "enabled": true,
+      "color2": "#2b82fb",
+      "direction": "down"
+    }
   },
   "search": {
     "enabled": true,

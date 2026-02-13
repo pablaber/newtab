@@ -447,6 +447,63 @@
   cursor: pointer;
 }
 
+.config-editor-color-row {
+  display: flex;
+  gap: 8px;
+}
+
+.config-editor-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.config-editor-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: rgba(var(--fg), 0.6);
+  cursor: pointer;
+}
+
+.config-editor-toggle-label {
+  font-size: 0.9rem;
+  color: rgba(var(--fg), 0.7);
+}
+
+.config-editor-direction-row {
+  display: flex;
+  gap: 6px;
+}
+
+.config-editor-direction-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+  padding: 0;
+  font-size: 1.1rem;
+  font-family: inherit;
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.06);
+  color: rgba(var(--fg), 0.45);
+  cursor: pointer;
+  transition: background 150ms, color 150ms, border-color 150ms;
+}
+
+.config-editor-direction-btn:hover {
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.7);
+}
+
+.config-editor-direction-btn.active {
+  background: rgba(var(--fg), 0.15);
+  color: rgb(var(--fg));
+  border-color: rgba(var(--fg), 0.3);
+}
+
 .config-editor-actions {
   display: flex;
   gap: 10px;

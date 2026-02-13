@@ -33,7 +33,7 @@ Open http://localhost:3542 in your browser. Use the settings page to customize, 
 
 Configuration is stored in the browser's localStorage. On first load (when no localStorage data exists), the app fetches `config.json` to seed the initial config. All subsequent changes are saved to localStorage and the seed file is not read again. The settings page has two tabs:
 
-- **Background** — configure background image, overlay color, and opacity
+- **Background** — configure background image, overlay color, opacity, and gradient
 - **Links** — add, remove, rename, and reorder sections and links
 
 You can also import/export the full config as a base64 string from the settings header.
@@ -54,8 +54,19 @@ All fields are optional.
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `imageUrl` | `string` | — | URL to a background image. If empty/missing, solid color is used. |
-| `color` | `string` | `"#1a1a2e"` | Fallback background color and overlay color |
+| `color` | `string` | `"#1a1a2e"` | Fallback background color and overlay color (also the first gradient color) |
 | `opacity` | `number` | `0.4` | Opacity of the color overlay on top of the image (0–1) |
+| `gradient` | `object` | — | Gradient settings (optional, see below) |
+
+### `background.gradient`
+
+Optional. When enabled, a linear gradient is used instead of a solid color for the background (or image overlay).
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | `boolean` | `false` | Whether to use a gradient background |
+| `color2` | `string` | `"#000000"` | Second color of the gradient (first color is `background.color`) |
+| `direction` | `string` | `"down"` | Gradient direction: `"up"`, `"down"`, `"left"`, or `"right"` |
 
 ### `search`
 
@@ -95,7 +106,12 @@ Each module represents a section of links on the page.
   "background": {
     "imageUrl": "https://example.com/bg.jpg",
     "opacity": 0.4,
-    "color": "#1a1a2e"
+    "color": "#1a1a2e",
+    "gradient": {
+      "enabled": true,
+      "color2": "#16213e",
+      "direction": "down"
+    }
   },
   "search": {
     "enabled": true,
