@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.0](https://github.com/pablaber/newtab/compare/v0.5.0...v0.6.0) (2026-02-13)
+
+
+### Features
+
+* add clear all links button with confirmation modal ([#25](https://github.com/pablaber/newtab/issues/25)) ([f92e861](https://github.com/pablaber/newtab/commit/f92e861ad0c84124ec13cfcc666213153ab0bf41))
+* allow editing of search bar placeholder text ([#27](https://github.com/pablaber/newtab/issues/27)) ([d08102e](https://github.com/pablaber/newtab/commit/d08102eb7c670210505bfae3f6a92f7e861ed3c2))
+* improve search with multi-field matching, scoring, and result limit ([#24](https://github.com/pablaber/newtab/issues/24)) ([a1ae396](https://github.com/pablaber/newtab/commit/a1ae396b7fd998265092cf76e3ac92e3fd0b5298))
+
+
+### Miscellaneous
+
+* add ui tests with vitest and react testing library ([#22](https://github.com/pablaber/newtab/issues/22)) ([2cc0cb2](https://github.com/pablaber/newtab/commit/2cc0cb2baf360e164ab92191930bce320d39bfeb))
+
 ## [0.5.0](https://github.com/pablaber/newtab/compare/v0.4.1...v0.5.0) (2026-02-13)
 
 
