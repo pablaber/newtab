@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/pablaber/newtab/compare/v0.1.0...v0.2.0) (2026-02-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* add multi-platform docker builds ([#4](https://github.com/pablaber/newtab/issues/4))
+
+### Features
+
+* add multi-platform docker builds ([#4](https://github.com/pablaber/newtab/issues/4)) ([91ff180](https://github.com/pablaber/newtab/commit/91ff180f41d6f87d9d83ab198d93e2fa87513064))
+
 ## [0.1.0](https://github.com/pablaber/newtab/compare/v0.0.1...v0.1.0) (2026-02-13)
 
 
