@@ -25,17 +25,14 @@ interface UseConfigResult {
 }
 
 export function useConfig(): UseConfigResult {
-  const [config, setConfigState] = useState<AppConfig | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [config, setConfigState] = useState<AppConfig | null>(
+    () => loadFromStorage(),
+  );
+  const [loading, setLoading] = useState(() => loadFromStorage() === null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = loadFromStorage();
-    if (stored) {
-      setConfigState(stored);
-      setLoading(false);
-      return;
-    }
+    if (config) return;
 
     fetch('/config.json')
       .then((res) => {
@@ -50,7 +47,7 @@ export function useConfig(): UseConfigResult {
         setError(err instanceof Error ? err.message : 'Failed to load config');
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [config]);
 
   const setConfig = useCallback((newConfig: AppConfig) => {
     saveToStorage(newConfig);
