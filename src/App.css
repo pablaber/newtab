@@ -447,6 +447,55 @@
   cursor: pointer;
 }
 
+.config-editor-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.config-editor-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: rgba(var(--fg), 0.6);
+  cursor: pointer;
+}
+
+.config-editor-toggle-label {
+  font-size: 0.9rem;
+  color: rgba(var(--fg), 0.7);
+}
+
+.config-editor-select {
+  width: 100%;
+  max-width: 200px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: rgb(var(--fg));
+  background: rgba(var(--fg), 0.08);
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.config-editor-select:focus {
+  background-color: rgba(var(--fg), 0.12);
+  border-color: rgba(var(--fg), 0.2);
+}
+
+.config-editor-select option {
+  background: rgb(var(--dropdown-bg));
+  color: rgb(var(--fg));
+}
+
 .config-editor-actions {
   display: flex;
   gap: 10px;

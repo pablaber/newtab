@@ -13,10 +13,19 @@ export interface ModuleConfig {
   links: LinkConfig[];
 }
 
+export type GradientDirection = 'up' | 'down' | 'left' | 'right';
+
+export interface GradientConfig {
+  enabled: boolean;
+  color2: string;
+  direction: GradientDirection;
+}
+
 export interface BackgroundConfig {
   imageUrl?: string;
   opacity?: number;
   color?: string;
+  gradient?: GradientConfig;
 }
 
 export interface SearchConfig {

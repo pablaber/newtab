@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import type { AppConfig, BackgroundConfig } from '../../../types/config.ts';
+import type { AppConfig, BackgroundConfig, GradientDirection } from '../../../types/config.ts';
+
+const DIRECTION_OPTIONS: { value: GradientDirection; label: string }[] = [
+  { value: 'down', label: 'Down' },
+  { value: 'up', label: 'Up' },
+  { value: 'left', label: 'Left' },
+  { value: 'right', label: 'Right' },
+];
 
 interface BackgroundTabProps {
   config: AppConfig;
@@ -13,14 +20,29 @@ export function BackgroundTab({ config, onSave, onClose, onPreview }: Background
   const [appliedImageUrl, setAppliedImageUrl] = useState(config.background?.imageUrl ?? '');
   const [opacity, setOpacity] = useState(config.background?.opacity ?? 0.5);
   const [color, setColor] = useState(config.background?.color ?? '#000000');
+  const [gradientEnabled, setGradientEnabled] = useState(config.background?.gradient?.enabled ?? false);
+  const [gradientColor2, setGradientColor2] = useState(config.background?.gradient?.color2 ?? '#000000');
+  const [gradientDirection, setGradientDirection] = useState<GradientDirection>(config.background?.gradient?.direction ?? 'down');
 
   const hasImage = appliedImageUrl.trim() !== '';
 
-  const updatePreview = (updates: { imageUrl?: string; opacity?: number; color?: string }) => {
-    const next = {
+  const buildGradient = (updates: { enabled?: boolean; color2?: string; direction?: GradientDirection } = {}) => ({
+    enabled: updates.enabled ?? gradientEnabled,
+    color2: updates.color2 ?? gradientColor2,
+    direction: updates.direction ?? gradientDirection,
+  });
+
+  const updatePreview = (updates: {
+    imageUrl?: string;
+    opacity?: number;
+    color?: string;
+    gradient?: { enabled?: boolean; color2?: string; direction?: GradientDirection };
+  }) => {
+    const next: BackgroundConfig = {
       imageUrl: (updates.imageUrl ?? appliedImageUrl) || undefined,
       opacity: updates.opacity ?? opacity,
       color: updates.color ?? color,
+      gradient: buildGradient(updates.gradient),
     };
     onPreview(next);
   };
@@ -44,6 +66,11 @@ export function BackgroundTab({ config, onSave, onClose, onPreview }: Background
         imageUrl: appliedImageUrl || undefined,
         opacity,
         color,
+        gradient: {
+          enabled: gradientEnabled,
+          color2: gradientColor2,
+          direction: gradientDirection,
+        },
       },
     });
     onClose();
@@ -99,7 +126,7 @@ export function BackgroundTab({ config, onSave, onClose, onPreview }: Background
       )}
 
       <label className="config-editor-field">
-        <span className="config-editor-label">Color</span>
+        <span className="config-editor-label">{gradientEnabled ? 'Color 1' : 'Color'}</span>
         <input
           type="color"
           className="config-editor-color"
@@ -107,6 +134,51 @@ export function BackgroundTab({ config, onSave, onClose, onPreview }: Background
           onChange={(e) => { setColor(e.target.value); updatePreview({ color: e.target.value }); }}
         />
       </label>
+
+      <div className="config-editor-field">
+        <label className="config-editor-toggle">
+          <input
+            type="checkbox"
+            checked={gradientEnabled}
+            onChange={(e) => {
+              setGradientEnabled(e.target.checked);
+              updatePreview({ gradient: { enabled: e.target.checked } });
+            }}
+          />
+          <span className="config-editor-toggle-label">Enable Gradient</span>
+        </label>
+      </div>
+
+      {gradientEnabled && (
+        <>
+          <label className="config-editor-field">
+            <span className="config-editor-label">Color 2</span>
+            <input
+              type="color"
+              className="config-editor-color"
+              value={gradientColor2}
+              onChange={(e) => { setGradientColor2(e.target.value); updatePreview({ gradient: { color2: e.target.value } }); }}
+            />
+          </label>
+
+          <label className="config-editor-field">
+            <span className="config-editor-label">Direction</span>
+            <select
+              className="config-editor-select"
+              value={gradientDirection}
+              onChange={(e) => {
+                const dir = e.target.value as GradientDirection;
+                setGradientDirection(dir);
+                updatePreview({ gradient: { direction: dir } });
+              }}
+            >
+              {DIRECTION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </label>
+        </>
+      )}
 
       <div className="config-editor-actions">
         <button className="config-editor-btn config-editor-btn-save" onClick={handleSave}>

@@ -128,6 +128,7 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
       imageUrl: bg.imageUrl,
       opacity: bg.opacity ?? 0.5,
       color: bg.color ?? '#000000',
+      gradient: bg.gradient,
     } : undefined);
 
     setImportSuccess(true);
