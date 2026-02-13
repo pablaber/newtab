@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import type { LinkConfig, ModuleConfig } from '../../../types/config.ts';
+import { scoreLinkMatch } from './searchScoring.ts';
+
+const MAX_RESULTS = 5;
 
 interface SearchBarProps {
   enabled: boolean;
@@ -29,12 +32,27 @@ export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchB
 
   const matches: MatchedLink[] = useMemo(() => {
     if (!query) return [];
-    const q = query.toLowerCase();
-    return modules.flatMap((m) =>
-      m.links
-        .filter((link) => link.label.toLowerCase().includes(q))
-        .map((link) => ({ ...link, moduleTitle: m.title, favicon: link.icon || getFaviconUrl(link.url) }))
-    );
+
+    const scored: { link: MatchedLink; score: number }[] = [];
+
+    for (const m of modules) {
+      for (const link of m.links) {
+        const score = scoreLinkMatch(query, link.label, m.title, link.url);
+        if (score > 0) {
+          scored.push({
+            link: {
+              ...link,
+              moduleTitle: m.title,
+              favicon: link.icon || getFaviconUrl(link.url),
+            },
+            score,
+          });
+        }
+      }
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, MAX_RESULTS).map((s) => s.link);
   }, [query, modules]);
 
   useEffect(() => {
