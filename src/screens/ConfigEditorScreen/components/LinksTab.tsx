@@ -22,6 +22,7 @@ export function LinksTab({ config, onSave, onClose }: LinksTabProps) {
     () => config.modules.map((m) => ({ ...m, links: m.links.map((l) => ({ ...l })) })),
   );
   const [submitted, setSubmitted] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   // --- Section handlers ---
 
@@ -139,6 +140,13 @@ export function LinksTab({ config, onSave, onClose }: LinksTabProps) {
     )?.message;
   };
 
+  // --- Clear all ---
+
+  const handleClearAll = () => {
+    setModules([]);
+    setShowClearConfirm(false);
+  };
+
   // --- Save ---
 
   const handleSave = () => {
@@ -159,15 +167,38 @@ export function LinksTab({ config, onSave, onClose }: LinksTabProps) {
     onClose();
   };
 
+  const totalLinks = modules.reduce((sum, m) => sum + m.links.length, 0);
+
   return (
     <>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
         <button className="config-editor-btn-add" onClick={addSection}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           Add Section
+        </button>
+        {modules.length > 0 && (
+          <button
+            className="config-editor-btn-clear-all"
+            onClick={() => setShowClearConfirm(true)}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            Clear All Links
+          </button>
+        )}
+        <button
+          className="config-editor-btn-add config-editor-btn-save-top"
+          onClick={handleSave}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Save
         </button>
       </div>
 
@@ -348,6 +379,41 @@ export function LinksTab({ config, onSave, onClose }: LinksTabProps) {
           Cancel
         </button>
       </div>
+
+      {showClearConfirm && (
+        <div className="config-editor-modal-overlay" onClick={() => setShowClearConfirm(false)}>
+          <div className="config-editor-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="config-editor-modal-header">
+              <h2 className="config-editor-modal-title">Clear All Links</h2>
+              <button className="config-editor-back" onClick={() => setShowClearConfirm(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="config-editor-clear-all-body">
+              <p className="config-editor-clear-all-warning">
+                This will remove all {modules.length} {modules.length === 1 ? 'section' : 'sections'} and {totalLinks} {totalLinks === 1 ? 'link' : 'links'}. This action cannot be undone.
+              </p>
+              <div className="config-editor-clear-all-actions">
+                <button
+                  className="config-editor-btn config-editor-btn-remove"
+                  onClick={handleClearAll}
+                >
+                  Remove
+                </button>
+                <button
+                  className="config-editor-btn config-editor-btn-cancel"
+                  onClick={() => setShowClearConfirm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
