@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/newtab-transparent.png" alt="newtab logo" width="128" />
+  <img src="public/newtab-transparent.png" alt="newtab logo" width="180" />
 </p>
 
 # newtab
@@ -7,7 +7,7 @@
 A minimal, customizable new-tab homepage built with React and TypeScript. Configuration is stored in the browser's localStorage and is fully editable from a built-in settings page. On first load, a default `config.json` is used to seed the initial config.
 
 <p align="center">
-  <img src="public/newtab-example.png" alt="newtab screenshot" width="700" />
+  <img src="public/newtab-example.png" alt="newtab screenshot" width="700" style="border-radius: 12px;" />
 </p>
 
 ## Installation
