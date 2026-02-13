@@ -30,6 +30,7 @@ Single-page React new-tab homepage. Reads config from `public/config.json`.
 
 - Branch pattern: `<type>/<short-description>` (e.g. `feat/add-search`, `fix/broken-links`, `chore/update-deps`)
 - Commit messages: single-line, lowercase, no Co-Authored-By lines
+- PR titles: conventional commit format without scope (e.g. `chore: add ci workflows`)
 
 ## Commands
 
