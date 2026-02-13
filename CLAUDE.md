@@ -72,3 +72,19 @@ Shared components used across screens stay in `src/components/`.
 - `npm run dev` — start dev server (port 3541)
 - `npm run build` — typecheck + production build
 - `npm run lint` — eslint
+- `npm run test` — run all tests once (vitest)
+- `npm run test:watch` — run tests in watch mode
+
+## Testing
+
+- Always keep tests up to date when adding new features or editing existing ones
+- Test files are co-located next to source files (e.g. `LinkItem.test.tsx` beside `LinkItem.tsx`)
+- Shared test fixtures live in `src/test/fixtures.ts`
+
+## Verification
+
+Always run lint, tests, and build to verify changes:
+
+```
+npm run lint && npm run test && npm run build
+```
