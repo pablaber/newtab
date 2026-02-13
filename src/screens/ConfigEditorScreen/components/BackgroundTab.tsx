@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import type { AppConfig, BackgroundConfig, GradientDirection } from '../../../types/config.ts';
 
-const DIRECTION_OPTIONS: { value: GradientDirection; label: string }[] = [
-  { value: 'down', label: 'Down' },
-  { value: 'up', label: 'Up' },
-  { value: 'left', label: 'Left' },
-  { value: 'right', label: 'Right' },
+const DIRECTION_ARROWS: { value: GradientDirection; arrow: string }[] = [
+  { value: 'up', arrow: '↑' },
+  { value: 'down', arrow: '↓' },
+  { value: 'left', arrow: '←' },
+  { value: 'right', arrow: '→' },
 ];
 
 interface BackgroundTabProps {
@@ -161,22 +161,24 @@ export function BackgroundTab({ config, onSave, onClose, onPreview }: Background
             />
           </label>
 
-          <label className="config-editor-field">
+          <div className="config-editor-field">
             <span className="config-editor-label">Direction</span>
-            <select
-              className="config-editor-select"
-              value={gradientDirection}
-              onChange={(e) => {
-                const dir = e.target.value as GradientDirection;
-                setGradientDirection(dir);
-                updatePreview({ gradient: { direction: dir } });
-              }}
-            >
-              {DIRECTION_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <div className="config-editor-direction-row">
+              {DIRECTION_ARROWS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={`config-editor-direction-btn${gradientDirection === opt.value ? ' active' : ''}`}
+                  onClick={() => {
+                    setGradientDirection(opt.value);
+                    updatePreview({ gradient: { direction: opt.value } });
+                  }}
+                >
+                  {opt.arrow}
+                </button>
               ))}
-            </select>
-          </label>
+            </div>
+          </div>
         </>
       )}
 
