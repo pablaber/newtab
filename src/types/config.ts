@@ -2,11 +2,13 @@ export interface LinkConfig {
   url: string;
   label: string;
   icon?: string;
+  hidden?: boolean;
 }
 
 export interface ModuleConfig {
   type: 'links';
   title: string;
+  hidden?: boolean;
 
   links: LinkConfig[];
 }

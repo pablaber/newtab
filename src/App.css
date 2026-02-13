@@ -686,6 +686,49 @@
   color: rgba(255, 120, 120, 0.9);
 }
 
+/* Hidden Checkbox */
+.config-editor-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(var(--fg), 0.08);
+  border-radius: 6px;
+  background: rgba(var(--fg), 0.05);
+  color: rgba(var(--fg), 0.3);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+  flex-shrink: 0;
+}
+
+.config-editor-checkbox:hover {
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.5);
+}
+
+.config-editor-checkbox:has(input:checked) {
+  color: rgba(var(--fg), 0.7);
+  background: rgba(var(--fg), 0.1);
+}
+
+.config-editor-checkbox:has(input:disabled) {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.config-editor-checkbox input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.config-editor-checkbox-icon {
+  flex-shrink: 0;
+}
+
 /* Add Buttons */
 .config-editor-btn-add {
   display: inline-flex;
