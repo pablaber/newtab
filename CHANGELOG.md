@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.0](https://github.com/pablaber/newtab/compare/v0.2.0...v0.3.0) (2026-02-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* add config saving over file ([#6](https://github.com/pablaber/newtab/issues/6))
+
+### Features
+
+* add config saving over file ([#6](https://github.com/pablaber/newtab/issues/6)) ([779d26b](https://github.com/pablaber/newtab/commit/779d26b2c34a24e82f8c746c753981a1fa1749ee))
+
+
+### Miscellaneous
+
+* update readme ([da97322](https://github.com/pablaber/newtab/commit/da9732235bb5e98a188dc0157dd151c8941fd3fd))
+
 ## [0.2.0](https://github.com/pablaber/newtab/compare/v0.1.0...v0.2.0) (2026-02-13)
 
 
