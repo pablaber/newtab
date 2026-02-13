@@ -1,4 +1,4 @@
-import type { ModuleConfig } from '../types/config.ts';
+import type { ModuleConfig } from '../../../types/config.ts';
 import { LinkItem } from './LinkItem.tsx';
 
 interface LinkModuleProps {

@@ -1,10 +1,9 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useConfig } from './hooks/useConfig.ts';
 import type { BackgroundConfig } from './types/config.ts';
 import { BackgroundLayer } from './components/BackgroundLayer.tsx';
-import { SearchBar } from './components/SearchBar.tsx';
-import { ModuleGrid } from './components/ModuleGrid.tsx';
-import { ConfigEditor } from './components/ConfigEditor.tsx';
+import { HomeScreen } from './screens/HomeScreen/index.ts';
+import { ConfigEditor } from './screens/ConfigEditorScreen/index.ts';
 import './App.css';
 
 function isLightColor(hex: string): boolean {
@@ -20,7 +19,6 @@ function isLightColor(hex: string): boolean {
 
 function App() {
   const { config, loading, error, setConfig } = useConfig();
-  const [navigating, setNavigating] = useState<{ url: string; label: string } | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const [previewBackground, setPreviewBackground] = useState<BackgroundConfig | null>(null);
 
@@ -38,38 +36,12 @@ function App() {
     document.documentElement.style.setProperty('--dropdown-bg', dropdownBg);
   }, [light]);
 
-  const handleNavigate = useCallback((url: string, label: string) => {
-    setNavigating({ url, label });
-    window.location.href = url;
-  }, []);
-
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
 
   if (error || !config) {
     return <div className="error">Failed to load configuration: {error}</div>;
-  }
-
-  if (navigating) {
-    let favicon = '';
-    try {
-      const domain = new URL(navigating.url).hostname;
-      favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-    } catch { /* ignore */ }
-
-    return (
-      <>
-        <BackgroundLayer background={config.background} />
-        <div className="navigating">
-          {favicon && (
-            <img className="navigating-favicon" src={favicon} alt="" width={24} height={24} />
-          )}
-          <span className="navigating-text">Navigating to {navigating.label}</span>
-          <div className="navigating-spinner" />
-        </div>
-      </>
-    );
   }
 
   if (showConfig) {
@@ -89,21 +61,7 @@ function App() {
   return (
     <>
       <BackgroundLayer background={config.background} />
-      <button className="config-button" tabIndex={-1} onClick={() => setShowConfig(true)} aria-label="Settings">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-        </svg>
-      </button>
-      <div className="content">
-        <SearchBar
-          enabled={config.search?.enabled ?? false}
-          placeholder={config.search?.placeholder ?? 'Filter links...'}
-          modules={config.modules}
-          onNavigate={handleNavigate}
-        />
-        <ModuleGrid modules={config.modules} onNavigate={handleNavigate} />
-      </div>
+      <HomeScreen config={config} onOpenSettings={() => setShowConfig(true)} />
     </>
   );
 }
