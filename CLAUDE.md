@@ -11,18 +11,34 @@ Single-page React new-tab homepage. Reads config from `public/config.json`.
 
 ## Structure
 
-- `src/types/config.ts` — config schema interfaces
-- `src/hooks/useConfig.ts` — fetches `/config.json`
-- `src/components/` — BackgroundLayer, SearchBar, ModuleGrid, LinkModule, LinkItem
-- `src/App.tsx` — assembles everything, manages filter state
-- `src/App.css` — all component styles
-- `src/index.css` — base reset
-- `docker/` — Dockerfile (multi-stage) + nginx.conf
+```
+src/
+├── App.css            — all component styles
+├── App.tsx            — assembles everything, manages app state
+├── components/
+│   ├── BackgroundLayer.tsx
+│   ├── ConfigEditor.tsx
+│   ├── LinkItem.tsx
+│   ├── LinkModule.tsx
+│   ├── ModuleGrid.tsx
+│   └── SearchBar.tsx
+├── hooks/
+│   └── useConfig.ts   — fetches /config.json, persists to localStorage
+├── index.css          — base reset + CSS custom properties
+├── main.tsx
+└── types/
+    └── config.ts      — config schema interfaces
+docker/
+├── Dockerfile         — multi-stage build
+└── nginx.conf
+```
 
 ## Style
 
-- Dark theme with translucent cards (`rgba(255,255,255,0.05)`)
-- System font stack, white text
+- Adaptive text color via CSS custom properties — `--fg` (RGB triplet) is set dynamically based on background color luminance (`0, 0, 0` on light backgrounds, `255, 255, 255` on dark). All text and translucent surfaces must use `rgb(var(--fg))` / `rgba(var(--fg), <alpha>)` instead of hardcoded `#fff` or `rgba(255,255,255,...)`.
+- `--dropdown-bg` (RGB triplet) is used for dropdown surfaces, also flips with background luminance.
+- Translucent cards use `rgba(var(--fg), 0.05)`
+- System font stack
 - Smooth hover transitions (150ms)
 - Responsive from 600px to ultrawide
 

@@ -62,8 +62,8 @@
 .navigating-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  border-top-color: rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(var(--fg), 0.15);
+  border-top-color: rgba(var(--fg), 0.6);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -92,21 +92,21 @@
   padding: 14px 20px;
   font-size: 1.1rem;
   font-family: inherit;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgb(var(--fg));
+  background: rgba(var(--fg), 0.08);
+  border: 1px solid rgba(var(--fg), 0.1);
   border-radius: 12px;
   outline: none;
   transition: background 150ms, border-color 150ms;
 }
 
 .search-bar::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(var(--fg), 0.4);
 }
 
 .search-bar:focus {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--fg), 0.12);
+  border-color: rgba(var(--fg), 0.2);
 }
 
 /* Search Dropdown */
@@ -118,8 +118,8 @@
   margin: 4px 0 0;
   padding: 4px 0;
   list-style: none;
-  background: rgba(30, 30, 30, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(var(--dropdown-bg), 0.95);
+  border: 1px solid rgba(var(--fg), 0.12);
   border-radius: 12px;
   max-height: 320px;
   overflow-y: auto;
@@ -132,17 +132,17 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(var(--fg), 0.85);
   text-decoration: none;
   transition: background 100ms;
 }
 
 .search-dropdown-item.selected {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg), 0.1);
 }
 
 .search-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg), 0.08);
 }
 
 .search-dropdown-left {
@@ -179,8 +179,8 @@
 
 /* Link Module */
 .link-module {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(var(--fg), 0.05);
+  border: 1px solid rgba(var(--fg), 0.08);
   border-radius: 12px;
   padding: 20px;
   min-width: 0;
@@ -209,12 +209,12 @@
   gap: 10px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--fg), 0.04);
   transition: background 150ms;
 }
 
 .link-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--fg), 0.1);
 }
 
 .link-item-icon {
@@ -224,6 +224,353 @@
 
 .link-item-label {
   font-size: 0.95rem;
+}
+
+/* Config Button */
+.config-button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(var(--fg), 0.08);
+  border-radius: 10px;
+  background: rgba(var(--fg), 0.05);
+  color: rgba(var(--fg), 0.5);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.config-button:hover {
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.8);
+}
+
+/* Config Editor */
+.config-editor {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.config-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.config-editor-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.config-editor-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(var(--fg), 0.08);
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.05);
+  color: rgba(var(--fg), 0.5);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.config-editor-back:hover {
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.8);
+}
+
+.config-editor-section {
+  background: rgba(var(--fg), 0.05);
+  border: 1px solid rgba(var(--fg), 0.08);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.config-editor-section-title {
+  margin: 0 0 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.config-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.config-editor-label {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.config-editor-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: rgb(var(--fg));
+  background: rgba(var(--fg), 0.08);
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 8px;
+  outline: none;
+  transition: background 150ms, border-color 150ms;
+  box-sizing: border-box;
+}
+
+.config-editor-input::placeholder {
+  color: rgba(var(--fg), 0.3);
+}
+
+.config-editor-input:focus {
+  background: rgba(var(--fg), 0.12);
+  border-color: rgba(var(--fg), 0.2);
+}
+
+.config-editor-input:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.config-editor-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.config-editor-input-group .config-editor-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.config-editor-btn-apply {
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.1);
+  color: rgba(var(--fg), 0.7);
+  cursor: pointer;
+  transition: background 150ms;
+  flex-shrink: 0;
+}
+
+.config-editor-btn-apply:hover:not(:disabled) {
+  background: rgba(var(--fg), 0.18);
+}
+
+.config-editor-btn-apply:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.config-editor-btn-remove {
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  background: rgba(220, 50, 50, 0.25);
+  color: rgba(255, 120, 120, 0.9);
+  cursor: pointer;
+  transition: background 150ms;
+  flex-shrink: 0;
+}
+
+.config-editor-btn-remove:hover {
+  background: rgba(220, 50, 50, 0.4);
+}
+
+.config-editor-range {
+  width: 100%;
+  accent-color: rgba(var(--fg), 0.6);
+}
+
+.config-editor-range:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.config-editor-color {
+  width: 48px;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.08);
+  cursor: pointer;
+}
+
+.config-editor-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.config-editor-btn {
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.config-editor-btn-save {
+  background: rgba(var(--fg), 0.15);
+  color: rgb(var(--fg));
+}
+
+.config-editor-btn-save:hover {
+  background: rgba(var(--fg), 0.25);
+}
+
+.config-editor-btn-cancel {
+  background: rgba(var(--fg), 0.05);
+  color: rgba(var(--fg), 0.6);
+}
+
+.config-editor-btn-cancel:hover {
+  background: rgba(var(--fg), 0.1);
+}
+
+/* Header Actions */
+.config-editor-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.config-editor-btn-ie {
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.06);
+  color: rgba(var(--fg), 0.55);
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms, color 150ms;
+}
+
+.config-editor-btn-ie:hover {
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.8);
+}
+
+/* Import / Export Modal */
+.config-editor-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.config-editor-modal {
+  width: 90%;
+  max-width: 480px;
+  background: rgba(var(--dropdown-bg), 0.97);
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+}
+
+.config-editor-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.config-editor-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.config-editor-ie-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.config-editor-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-family: monospace;
+  color: rgb(var(--fg));
+  background: rgba(var(--fg), 0.08);
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  word-break: break-all;
+  transition: background 150ms, border-color 150ms;
+}
+
+.config-editor-textarea::placeholder {
+  color: rgba(var(--fg), 0.3);
+}
+
+.config-editor-textarea:focus {
+  background: rgba(var(--fg), 0.12);
+  border-color: rgba(var(--fg), 0.2);
+}
+
+.config-editor-btn-copy {
+  align-self: flex-end;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.8);
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.config-editor-btn-copy:hover {
+  background: rgba(var(--fg), 0.2);
+}
+
+.config-editor-ie-error {
+  font-size: 0.85rem;
+  color: rgba(240, 80, 80, 0.9);
+  padding: 8px 12px;
+  background: rgba(240, 80, 80, 0.1);
+  border-radius: 6px;
+}
+
+.config-editor-ie-success {
+  font-size: 0.85rem;
+  color: rgba(80, 200, 120, 0.9);
+  padding: 8px 12px;
+  background: rgba(80, 200, 120, 0.1);
+  border-radius: 6px;
 }
 
 /* Responsive */
