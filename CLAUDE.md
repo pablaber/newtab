@@ -26,6 +26,12 @@ Single-page React new-tab homepage. Reads config from `public/config.json`.
 - Smooth hover transitions (150ms)
 - Responsive from 600px to ultrawide
 
+## Git
+
+- Branch pattern: `<type>/<short-description>` (e.g. `feat/add-search`, `fix/broken-links`, `chore/update-deps`)
+- Commit messages: single-line, lowercase, no Co-Authored-By lines
+- PR titles: conventional commit format without scope (e.g. `chore: add ci workflows`)
+
 ## Commands
 
 - `npm run dev` — start dev server (port 3541)

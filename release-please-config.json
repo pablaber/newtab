@@ -1,0 +1,16 @@
+{
+  "changelog-sections": [
+    { "type": "feat", "section": "Features", "hidden": false },
+    { "type": "fix", "section": "Bug Fixes", "hidden": false },
+    { "type": "vuln", "section": "Vulnerability Fixes", "hidden": false },
+    { "type": "chore", "section": "Miscellaneous", "hidden": false },
+    { "type": "ignore", "section": "Ignored", "hidden": true }
+  ],
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "newtab",
+      "include-component-in-tag": false
+    }
+  }
+}
