@@ -7,9 +7,11 @@ interface ModuleGridProps {
 }
 
 export function ModuleGrid({ modules, onNavigate }: ModuleGridProps) {
+  const visibleModules = modules.filter((m) => !m.hidden);
+
   return (
     <div className="module-grid">
-      {modules.map((module) => (
+      {visibleModules.map((module) => (
         <LinkModule key={module.title} module={module} onNavigate={onNavigate} />
       ))}
     </div>

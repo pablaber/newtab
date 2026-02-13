@@ -626,6 +626,12 @@
   font-weight: 600;
 }
 
+.config-editor-section-divider {
+  border: none;
+  border-top: 1px solid rgba(var(--fg), 0.08);
+  margin: 4px 0 12px;
+}
+
 /* Links Tab -- Link Rows */
 .config-editor-link-row {
   display: flex;
@@ -684,6 +690,55 @@
 .config-editor-btn-icon.danger:hover:not(:disabled) {
   background: rgba(220, 50, 50, 0.25);
   color: rgba(255, 120, 120, 0.9);
+}
+
+/* Hidden Checkbox */
+.config-editor-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(var(--fg), 0.08);
+  border-radius: 6px;
+  background: rgba(var(--fg), 0.05);
+  color: rgba(var(--fg), 0.45);
+  cursor: pointer;
+  transition: background 150ms, color 150ms, border-color 150ms;
+  flex-shrink: 0;
+}
+
+.config-editor-checkbox:hover:not(:has(input:disabled)) {
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.6);
+}
+
+.config-editor-checkbox:has(input:checked) {
+  color: rgba(200, 120, 50, 0.85);
+  background: rgba(200, 120, 50, 0.12);
+  border-color: rgba(200, 120, 50, 0.25);
+}
+
+.config-editor-checkbox:has(input:checked):hover:not(:has(input:disabled)) {
+  background: rgba(200, 120, 50, 0.2);
+  color: rgba(200, 120, 50, 1);
+}
+
+.config-editor-checkbox:has(input:disabled) {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.config-editor-checkbox input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.config-editor-checkbox-icon {
+  flex-shrink: 0;
 }
 
 /* Add Buttons */

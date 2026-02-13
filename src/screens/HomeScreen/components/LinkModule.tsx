@@ -7,11 +7,13 @@ interface LinkModuleProps {
 }
 
 export function LinkModule({ module, onNavigate }: LinkModuleProps) {
+  const visibleLinks = module.links.filter((l) => !l.hidden);
+
   return (
     <div className="link-module">
       <h2 className="link-module-title">{module.title}</h2>
       <div className="link-module-grid">
-        {module.links.map((link) => (
+        {visibleLinks.map((link) => (
           <LinkItem key={link.url} link={link} onNavigate={onNavigate} />
         ))}
       </div>
