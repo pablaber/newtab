@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/pablaber/newtab/compare/v0.4.0...v0.4.1) (2026-02-13)
+
+
+### Miscellaneous
+
+* add newtab logo and screenshots to readme ([#11](https://github.com/pablaber/newtab/issues/11)) ([4daeefb](https://github.com/pablaber/newtab/commit/4daeefbd1dd757f09c4fac40623faa8ef8b9a85c))
+
 ## [0.4.0](https://github.com/pablaber/newtab/compare/v0.3.1...v0.4.0) (2026-02-13)
 
 
