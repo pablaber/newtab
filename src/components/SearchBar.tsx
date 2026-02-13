@@ -38,10 +38,6 @@ export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchB
   }, [query, modules]);
 
   useEffect(() => {
-    setSelectedIndex(0);
-  }, [matches.length]);
-
-  useEffect(() => {
     const item = listRef.current?.children[selectedIndex] as HTMLElement | undefined;
     item?.scrollIntoView({ block: 'nearest' });
   }, [selectedIndex]);
@@ -70,7 +66,7 @@ export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchB
           type="text"
           placeholder={placeholder}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
           onKeyDown={handleKeyDown}
           autoFocus
         />

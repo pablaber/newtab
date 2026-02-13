@@ -8,7 +8,7 @@ A minimal, customizable new-tab homepage built with React and TypeScript. It rea
 
 ```bash
 docker run -d \
-  -p 3541:80 \
+  -p 3541:3541 \
   -v /path/to/your/config.json:/usr/share/nginx/html/config.json:ro \
   tastinggrounds/newtab
 ```
@@ -22,7 +22,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3541 in your browser. Edit `public/config.json` to customize.
+Open http://localhost:3542 in your browser. Edit `public/config.json` to customize.
 
 ## Configuration
 
@@ -114,7 +114,7 @@ Build and run with Docker:
 docker build -f docker/Dockerfile -t newtab .
 
 docker run -d \
-  -p 3541:80 \
+  -p 3541:3541 \
   -v /path/to/your/config.json:/usr/share/nginx/html/config.json:ro \
   newtab
 ```
