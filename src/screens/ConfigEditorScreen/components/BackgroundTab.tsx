@@ -125,15 +125,25 @@ export function BackgroundTab({ config, onSave, onClose, onPreview }: Background
         </label>
       )}
 
-      <label className="config-editor-field">
-        <span className="config-editor-label">{gradientEnabled ? 'Color 1' : 'Color'}</span>
-        <input
-          type="color"
-          className="config-editor-color"
-          value={color}
-          onChange={(e) => { setColor(e.target.value); updatePreview({ color: e.target.value }); }}
-        />
-      </label>
+      <div className="config-editor-field">
+        <span className="config-editor-label">{gradientEnabled ? 'Colors' : 'Color'}</span>
+        <div className="config-editor-color-row">
+          <input
+            type="color"
+            className="config-editor-color"
+            value={color}
+            onChange={(e) => { setColor(e.target.value); updatePreview({ color: e.target.value }); }}
+          />
+          {gradientEnabled && (
+            <input
+              type="color"
+              className="config-editor-color"
+              value={gradientColor2}
+              onChange={(e) => { setGradientColor2(e.target.value); updatePreview({ gradient: { color2: e.target.value } }); }}
+            />
+          )}
+        </div>
+      </div>
 
       <div className="config-editor-field">
         <label className="config-editor-toggle">
@@ -151,16 +161,6 @@ export function BackgroundTab({ config, onSave, onClose, onPreview }: Background
 
       {gradientEnabled && (
         <>
-          <label className="config-editor-field">
-            <span className="config-editor-label">Color 2</span>
-            <input
-              type="color"
-              className="config-editor-color"
-              value={gradientColor2}
-              onChange={(e) => { setGradientColor2(e.target.value); updatePreview({ gradient: { color2: e.target.value } }); }}
-            />
-          </label>
-
           <div className="config-editor-field">
             <span className="config-editor-label">Direction</span>
             <div className="config-editor-direction-row">

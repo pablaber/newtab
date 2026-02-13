@@ -447,6 +447,11 @@
   cursor: pointer;
 }
 
+.config-editor-color-row {
+  display: flex;
+  gap: 8px;
+}
+
 .config-editor-toggle {
   display: flex;
   align-items: center;
