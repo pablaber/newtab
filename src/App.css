@@ -74,6 +74,50 @@
   }
 }
 
+/* Home Empty State */
+.home-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  min-height: calc(100vh - 200px);
+}
+
+.home-empty-text {
+  margin: 0;
+  font-size: 1.2rem;
+  color: rgba(var(--fg), 0.5);
+}
+
+.home-empty-hint {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: rgba(var(--fg), 0.35);
+}
+
+.home-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 10px;
+  background: rgba(var(--fg), 0.06);
+  color: rgba(var(--fg), 0.5);
+  cursor: pointer;
+  transition: background 150ms, color 150ms, border-color 150ms;
+}
+
+.home-empty-btn:hover {
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.75);
+  border-color: rgba(var(--fg), 0.2);
+}
+
 /* Search Bar */
 .search-bar-container {
   display: flex;
@@ -803,7 +847,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  height: 34px;
+  padding: 0 14px;
   font-size: 0.85rem;
   font-family: inherit;
   border: 1px dashed rgba(var(--fg), 0.15);
@@ -812,6 +857,7 @@
   color: rgba(var(--fg), 0.5);
   cursor: pointer;
   transition: background 150ms, color 150ms, border-color 150ms;
+  box-sizing: border-box;
 }
 
 .config-editor-btn-add:hover {
@@ -825,6 +871,62 @@
   font-size: 0.8rem;
   color: rgba(240, 80, 80, 0.9);
   margin-top: 2px;
+}
+
+/* Clear All Links Button — mirrors .config-editor-btn-add layout with destructive colors */
+.config-editor-btn-clear-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border: 1px solid rgba(220, 50, 50, 0.25);
+  border-radius: 8px;
+  background: rgba(220, 50, 50, 0.12);
+  color: rgba(255, 120, 120, 0.9);
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms, color 150ms;
+  box-sizing: border-box;
+}
+
+.config-editor-btn-clear-all:hover {
+  background: rgba(220, 50, 50, 0.25);
+  border-color: rgba(220, 50, 50, 0.4);
+}
+
+/* Top Save Button — right-aligned, mirrors .config-editor-btn-add layout */
+.config-editor-btn-save-top {
+  margin-left: auto;
+  border-style: solid;
+  background: rgba(var(--fg), 0.08);
+  color: rgba(var(--fg), 0.6);
+}
+
+.config-editor-btn-save-top:hover {
+  background: rgba(var(--fg), 0.15);
+  color: rgba(var(--fg), 0.8);
+  border-color: rgba(var(--fg), 0.25);
+}
+
+/* Clear All Confirmation Modal */
+.config-editor-clear-all-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.config-editor-clear-all-warning {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(var(--fg), 0.7);
+}
+
+.config-editor-clear-all-actions {
+  display: flex;
+  gap: 10px;
 }
 
 /* Links Tab -- Empty State */

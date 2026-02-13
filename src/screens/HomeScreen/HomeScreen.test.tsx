@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HomeScreen } from './HomeScreen.tsx';
-import { mockConfig } from '../../test/fixtures.ts';
+import { mockConfig, mockHiddenModule } from '../../test/fixtures.ts';
 
 describe('HomeScreen', () => {
   it('renders settings button, search bar, and module grid', () => {
@@ -34,5 +34,34 @@ describe('HomeScreen', () => {
 
     await user.click(screen.getByText('GitHub'));
     expect(screen.getByText('Navigating to GitHub')).toBeInTheDocument();
+  });
+
+  it('shows empty state with search bar when no modules exist', () => {
+    const emptyConfig = { ...mockConfig, modules: [] };
+    render(<HomeScreen config={emptyConfig} onOpenSettings={vi.fn()} />);
+
+    expect(screen.getByPlaceholderText('Filter links...')).toBeInTheDocument();
+    expect(screen.getByText('No links to show yet.')).toBeInTheDocument();
+    expect(screen.getByText('Add sections and links in settings to get started.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open Settings' })).toBeInTheDocument();
+  });
+
+  it('shows empty state with search bar when all modules are hidden', () => {
+    const hiddenConfig = { ...mockConfig, modules: [mockHiddenModule] };
+    render(<HomeScreen config={hiddenConfig} onOpenSettings={vi.fn()} />);
+
+    expect(screen.getByPlaceholderText('Filter links...')).toBeInTheDocument();
+    expect(screen.getByText('No links to show yet.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open Settings' })).toBeInTheDocument();
+  });
+
+  it('opens settings when empty state button is clicked', async () => {
+    const user = userEvent.setup();
+    const onOpenSettings = vi.fn();
+    const emptyConfig = { ...mockConfig, modules: [] };
+    render(<HomeScreen config={emptyConfig} onOpenSettings={onOpenSettings} />);
+
+    await user.click(screen.getByRole('button', { name: 'Open Settings' }));
+    expect(onOpenSettings).toHaveBeenCalledOnce();
   });
 });

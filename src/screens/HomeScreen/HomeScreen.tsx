@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { AppConfig } from '../../types/config.ts';
 import { SearchBar } from './components/SearchBar.tsx';
 import { ModuleGrid } from './components/ModuleGrid.tsx';
@@ -15,6 +15,11 @@ export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
     setNavigating({ url, label });
     window.location.href = url;
   }, []);
+
+  const hasVisibleModules = useMemo(
+    () => config.modules.some((m) => !m.hidden),
+    [config.modules],
+  );
 
   if (navigating) {
     let favicon = '';
@@ -49,7 +54,21 @@ export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
           modules={config.modules}
           onNavigate={handleNavigate}
         />
-        <ModuleGrid modules={config.modules} onNavigate={handleNavigate} />
+        {hasVisibleModules ? (
+          <ModuleGrid modules={config.modules} onNavigate={handleNavigate} />
+        ) : (
+          <div className="home-empty">
+            <p className="home-empty-text">No links to show yet.</p>
+            <p className="home-empty-hint">Add sections and links in settings to get started.</p>
+            <button className="home-empty-btn" onClick={onOpenSettings}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              Open Settings
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
