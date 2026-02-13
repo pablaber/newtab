@@ -11,14 +11,14 @@ describe('ConfigEditorScreen', () => {
     onPreview: vi.fn(),
   };
 
-  it('renders with Background tab active by default', () => {
+  it('renders with General tab active by default', () => {
     render(<ConfigEditor {...defaultProps} />);
     expect(screen.getByText('Settings')).toBeInTheDocument();
-    const bgTab = screen.getByRole('button', { name: 'Background' });
-    expect(bgTab).toHaveClass('active');
+    const generalTab = screen.getByRole('button', { name: 'General' });
+    expect(generalTab).toHaveClass('active');
   });
 
-  it('switches between Background and Links tabs', async () => {
+  it('switches between General and Links tabs', async () => {
     const user = userEvent.setup();
     render(<ConfigEditor {...defaultProps} />);
 
@@ -26,8 +26,8 @@ describe('ConfigEditorScreen', () => {
     await user.click(linksTab);
     expect(linksTab).toHaveClass('active');
 
-    const bgTab = screen.getByRole('button', { name: 'Background' });
-    expect(bgTab).not.toHaveClass('active');
+    const generalTab = screen.getByRole('button', { name: 'General' });
+    expect(generalTab).not.toHaveClass('active');
   });
 
   it('shows export modal with base64 string', async () => {

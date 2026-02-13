@@ -373,6 +373,10 @@
   padding: 20px;
 }
 
+.config-editor-section-gap {
+  margin-top: 16px;
+}
+
 .config-editor-section-title {
   margin: 0 0 20px;
   font-size: 0.85rem;
