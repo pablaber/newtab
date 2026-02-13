@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/pablaber/newtab/compare/v0.3.0...v0.3.1) (2026-02-13)
+
+
+### Miscellaneous
+
+* fix tab index ([50ed29f](https://github.com/pablaber/newtab/commit/50ed29f9c8eab9869a01b8df8665eef5a07f52c9))
+
 ## [0.3.0](https://github.com/pablaber/newtab/compare/v0.2.0...v0.3.0) (2026-02-13)
 
 
