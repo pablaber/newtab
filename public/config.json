@@ -12,14 +12,46 @@
   "modules": [
     {
       "type": "links",
-      "title": "Favorites",
+      "title": "⭐ Favorites",
       "columns": 3,
       "links": [
         { "url": "https://github.com", "label": "GitHub" },
         { "url": "https://news.ycombinator.com", "label": "Hacker News" },
-        { "url": "https://youtube.com", "label": "YouTube" }
+        { "url": "https://youtube.com", "label": "YouTube" },
+        { "url": "https://reddit.com", "label": "Reddit" },
+        { "url": "https://twitter.com", "label": "Twitter" }
+      ]
+    },
+    {
+      "type": "links",
+      "title": "🛠️ Tools",
+      "columns": 3,
+      "links": [
+        { "url": "https://calendar.google.com", "label": "Google Calendar" },
+        { "url": "https://notion.so", "label": "Notion" },
+        { "url": "https://drive.google.com", "label": "Google Drive" },
+        { "url": "https://chat.openai.com", "label": "ChatGPT" }
+      ]
+    },
+    {
+      "type": "links",
+      "title": "🔭 Discover",
+      "columns": 3,
+      "links": [
+        { "url": "https://tastinggrounds.com", "label": "Tasting Grounds" },
+        { "url": "https://wikipedia.org", "label": "Wikipedia" },
+        { "url": "https://spotify.com", "label": "Spotify" }
+      ]
+    },
+    {
+      "type": "links",
+      "title": "📰 News",
+      "columns": 3,
+      "links": [
+        { "url": "https://techcrunch.com", "label": "TechCrunch" },
+        { "url": "https://arstechnica.com", "label": "Ars Technica" },
+        { "url": "https://theverge.com", "label": "The Verge" }
       ]
     }
   ]
 }
-

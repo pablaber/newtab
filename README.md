@@ -4,7 +4,11 @@
 
 # newtab
 
-A minimal, customizable new-tab homepage built with React and TypeScript. It reads all configuration from a static `config.json` file and renders a clean dark-themed homepage with an optional background image, search/filter bar, and organized link modules.
+A minimal, customizable new-tab homepage built with React and TypeScript. Configuration is stored in the browser's localStorage and is fully editable from a built-in settings page. On first load, a default `config.json` is used to seed the initial config.
+
+<p align="center">
+  <img src="public/newtab-example.png" alt="newtab screenshot" width="700" />
+</p>
 
 ## Installation
 
@@ -14,7 +18,7 @@ docker run -d \
   tastinggrounds/newtab
 ```
 
-Then open http://localhost:3541. The config is editable directly from the settings page in the browser. See the [Configuration](#configuration) section below for `config.json` options.
+Then open http://localhost:3541. All configuration is managed from the built-in settings page. See the [Configuration](#configuration) section below for available options.
 
 ## Development
 
@@ -23,11 +27,11 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3542 in your browser. Edit `public/config.json` to customize.
+Open http://localhost:3542 in your browser. Use the settings page to customize, or edit `public/config.json` to change the default seed config.
 
 ## Configuration
 
-All configuration lives in `public/config.json` and is persisted to the browser's localStorage. The settings page has two tabs:
+Configuration is stored in the browser's localStorage. On first load (when no localStorage data exists), the app fetches `config.json` to seed the initial config. All subsequent changes are saved to localStorage and the seed file is not read again. The settings page has two tabs:
 
 - **Background** — configure background image, overlay color, and opacity
 - **Links** — add, remove, rename, and reorder sections and links
