@@ -226,6 +226,230 @@
   font-size: 0.95rem;
 }
 
+/* Config Button */
+.config-button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.config-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Config Editor */
+.config-editor {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.config-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.config-editor-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.config-editor-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+
+.config-editor-back:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.config-editor-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.config-editor-section-title {
+  margin: 0 0 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+}
+
+.config-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.config-editor-label {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.config-editor-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  outline: none;
+  transition: background 150ms, border-color 150ms;
+  box-sizing: border-box;
+}
+
+.config-editor-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.config-editor-input:focus {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.config-editor-input:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.config-editor-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.config-editor-input-group .config-editor-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.config-editor-btn-apply {
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background 150ms;
+  flex-shrink: 0;
+}
+
+.config-editor-btn-apply:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.config-editor-btn-apply:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.config-editor-btn-remove {
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  background: rgba(220, 50, 50, 0.25);
+  color: rgba(255, 120, 120, 0.9);
+  cursor: pointer;
+  transition: background 150ms;
+  flex-shrink: 0;
+}
+
+.config-editor-btn-remove:hover {
+  background: rgba(220, 50, 50, 0.4);
+}
+
+.config-editor-range {
+  width: 100%;
+  accent-color: rgba(255, 255, 255, 0.6);
+}
+
+.config-editor-range:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.config-editor-color {
+  width: 48px;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.config-editor-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.config-editor-btn {
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.config-editor-btn-save {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.config-editor-btn-save:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.config-editor-btn-cancel {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.config-editor-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .content {
