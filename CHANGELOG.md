@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0](https://github.com/pablaber/newtab/compare/v0.3.1...v0.4.0) (2026-02-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* add link support to config ([#9](https://github.com/pablaber/newtab/issues/9))
+
+### Features
+
+* add link support to config ([#9](https://github.com/pablaber/newtab/issues/9)) ([8016b6a](https://github.com/pablaber/newtab/commit/8016b6a28ff9dd4c2966cb3ccff6d35241cc5f1d))
+
 ## [0.3.1](https://github.com/pablaber/newtab/compare/v0.3.0...v0.3.1) (2026-02-13)
 
 
