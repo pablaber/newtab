@@ -1,8 +1,10 @@
+<p align="center">
+  <img src="public/newtab-transparent.png" alt="newtab logo" width="128" />
+</p>
+
 # newtab
 
 A minimal, customizable new-tab homepage built with React and TypeScript. It reads all configuration from a static `config.json` file and renders a clean dark-themed homepage with an optional background image, search/filter bar, and organized link modules.
-
-![Screenshot placeholder](screenshot.png)
 
 ## Installation
 
