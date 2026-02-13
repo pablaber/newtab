@@ -9,11 +9,10 @@ A minimal, customizable new-tab homepage built with React and TypeScript. It rea
 ```bash
 docker run -d \
   -p 3541:3541 \
-  -v /path/to/your/config.json:/usr/share/nginx/html/config.json:ro \
   tastinggrounds/newtab
 ```
 
-Then open http://localhost:3541. See the [Configuration](#configuration) section below for `config.json` options.
+Then open http://localhost:3541. The config is editable directly from the settings page in the browser. See the [Configuration](#configuration) section below for `config.json` options.
 
 ## Development
 
@@ -26,7 +25,7 @@ Open http://localhost:3542 in your browser. Edit `public/config.json` to customi
 
 ## Configuration
 
-All configuration lives in `public/config.json` (or volume-mounted at runtime in Docker).
+All configuration lives in `public/config.json` and is persisted to the browser's localStorage. You can edit settings directly from the settings page, or import/export configs as base64 strings.
 
 ### Top-level
 
@@ -115,13 +114,23 @@ docker build -f docker/Dockerfile -t newtab .
 
 docker run -d \
   -p 3541:3541 \
-  -v /path/to/your/config.json:/usr/share/nginx/html/config.json:ro \
   newtab
 ```
 
 Then open http://localhost:3541.
 
-The `config.json` is volume-mounted so you can update it without rebuilding the image.
+### Loading config via volume mount
+
+You can optionally provide an initial `config.json` by volume-mounting it into the container. This is useful for seeding the config on first load or sharing the same config across multiple instances:
+
+```bash
+docker run -d \
+  -p 3541:3541 \
+  -v /path/to/your/config.json:/usr/share/nginx/html/config.json:ro \
+  newtab
+```
+
+The volume-mounted config is used as the initial config on first load. Once the config is persisted to localStorage, the local copy takes precedence. You can also use the import/export feature in settings to transfer configs between browsers.
 
 ## Browser New Tab
 
