@@ -450,6 +450,129 @@
   background: rgba(var(--fg), 0.1);
 }
 
+/* Header Actions */
+.config-editor-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.config-editor-btn-ie {
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.06);
+  color: rgba(var(--fg), 0.55);
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms, color 150ms;
+}
+
+.config-editor-btn-ie:hover {
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.8);
+}
+
+/* Import / Export Modal */
+.config-editor-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.config-editor-modal {
+  width: 90%;
+  max-width: 480px;
+  background: rgba(var(--dropdown-bg), 0.97);
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+}
+
+.config-editor-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.config-editor-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.config-editor-ie-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.config-editor-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-family: monospace;
+  color: rgb(var(--fg));
+  background: rgba(var(--fg), 0.08);
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  word-break: break-all;
+  transition: background 150ms, border-color 150ms;
+}
+
+.config-editor-textarea::placeholder {
+  color: rgba(var(--fg), 0.3);
+}
+
+.config-editor-textarea:focus {
+  background: rgba(var(--fg), 0.12);
+  border-color: rgba(var(--fg), 0.2);
+}
+
+.config-editor-btn-copy {
+  align-self: flex-end;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.8);
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.config-editor-btn-copy:hover {
+  background: rgba(var(--fg), 0.2);
+}
+
+.config-editor-ie-error {
+  font-size: 0.85rem;
+  color: rgba(240, 80, 80, 0.9);
+  padding: 8px 12px;
+  background: rgba(240, 80, 80, 0.1);
+  border-radius: 6px;
+}
+
+.config-editor-ie-success {
+  font-size: 0.85rem;
+  color: rgba(80, 200, 120, 0.9);
+  padding: 8px 12px;
+  background: rgba(80, 200, 120, 0.1);
+  border-radius: 6px;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .content {
