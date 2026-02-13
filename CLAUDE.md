@@ -13,25 +13,44 @@ Single-page React new-tab homepage. Reads config from `public/config.json`.
 
 ```
 src/
-├── App.css            — all component styles
-├── App.tsx            — assembles everything, manages app state
+├── App.css                — all component styles
+├── App.tsx                — thin shell: config loading, light/dark mode, screen switching
 ├── components/
-│   ├── BackgroundLayer.tsx
-│   ├── ConfigEditor.tsx
-│   ├── LinkItem.tsx
-│   ├── LinkModule.tsx
-│   ├── ModuleGrid.tsx
-│   └── SearchBar.tsx
+│   └── BackgroundLayer.tsx — shared background component (used by both screens)
+├── screens/
+│   ├── HomeScreen/
+│   │   ├── index.ts
+│   │   ├── HomeScreen.tsx         — navigating state, settings button, composes children
+│   │   └── components/
+│   │       ├── SearchBar.tsx
+│   │       ├── ModuleGrid.tsx
+│   │       ├── LinkModule.tsx
+│   │       └── LinkItem.tsx
+│   └── ConfigEditorScreen/
+│       ├── index.ts
+│       ├── ConfigEditorScreen.tsx — header, tab bar, import/export modal
+│       └── components/
+│           ├── BackgroundTab.tsx  — background settings (image, color, opacity)
+│           └── LinksTab.tsx      — section + link CRUD with reordering & validation
 ├── hooks/
-│   └── useConfig.ts   — fetches /config.json, persists to localStorage
-├── index.css          — base reset + CSS custom properties
+│   └── useConfig.ts       — fetches /config.json, persists to localStorage
+├── index.css              — base reset + CSS custom properties
 ├── main.tsx
 └── types/
-    └── config.ts      — config schema interfaces
+    └── config.ts          — config schema interfaces
 docker/
-├── Dockerfile         — multi-stage build
+├── Dockerfile             — multi-stage build
 └── nginx.conf
 ```
+
+### Screen pattern
+
+Each screen lives in `src/screens/<ScreenName>/` with:
+- `index.ts` — re-exports the main component
+- `<ScreenName>.tsx` — the screen component
+- `components/` — components specific to that screen
+
+Shared components used across screens stay in `src/components/`.
 
 ## Style
 

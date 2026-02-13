@@ -1,7 +1,21 @@
 import { useState } from 'react';
-import type { AppConfig } from '../types/config.ts';
+import type { AppConfig, BackgroundConfig } from '../../types/config.ts';
+import { BackgroundTab } from './components/BackgroundTab.tsx';
+import { LinksTab } from './components/LinksTab.tsx';
 
 const STORAGE_KEY = 'newtab-config';
+
+function toBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  const binString = Array.from(bytes, (byte) => String.fromCodePoint(byte)).join('');
+  return btoa(binString);
+}
+
+function fromBase64(b64: string): string {
+  const binString = atob(b64);
+  const bytes = Uint8Array.from(binString, (c) => c.codePointAt(0)!);
+  return new TextDecoder().decode(bytes);
+}
 
 function validateConfig(value: unknown): value is AppConfig {
   if (typeof value !== 'object' || value === null) return false;
@@ -24,61 +38,23 @@ function validateConfig(value: unknown): value is AppConfig {
 }
 
 type ImportExportPanel = 'none' | 'export' | 'import';
+type Tab = 'background' | 'links';
 
 interface ConfigEditorProps {
   config: AppConfig;
   onSave: (config: AppConfig) => void;
   onClose: () => void;
-  onPreview: (background: AppConfig['background']) => void;
+  onPreview: (background: BackgroundConfig | undefined) => void;
 }
 
 export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEditorProps) {
-  const [imageUrl, setImageUrl] = useState(config.background?.imageUrl ?? '');
-  const [appliedImageUrl, setAppliedImageUrl] = useState(config.background?.imageUrl ?? '');
-  const [opacity, setOpacity] = useState(config.background?.opacity ?? 0.5);
-  const [color, setColor] = useState(config.background?.color ?? '#000000');
-
+  const [tab, setTab] = useState<Tab>('background');
   const [activePanel, setActivePanel] = useState<ImportExportPanel>('none');
   const [exportString, setExportString] = useState('');
   const [copied, setCopied] = useState(false);
   const [importString, setImportString] = useState('');
   const [importError, setImportError] = useState('');
   const [importSuccess, setImportSuccess] = useState(false);
-
-  const hasImage = appliedImageUrl.trim() !== '';
-
-  const updatePreview = (updates: { imageUrl?: string; opacity?: number; color?: string }) => {
-    const next = {
-      imageUrl: (updates.imageUrl ?? appliedImageUrl) || undefined,
-      opacity: updates.opacity ?? opacity,
-      color: updates.color ?? color,
-    };
-    onPreview(next);
-  };
-
-  const applyImageUrl = () => {
-    setAppliedImageUrl(imageUrl);
-    updatePreview({ imageUrl: imageUrl || undefined });
-  };
-
-  const removeImageUrl = () => {
-    setImageUrl('');
-    setAppliedImageUrl('');
-    updatePreview({ imageUrl: '' });
-  };
-
-  const handleSave = () => {
-    onSave({
-      ...config,
-      background: {
-        ...config.background,
-        imageUrl: appliedImageUrl || undefined,
-        opacity,
-        color,
-      },
-    });
-    onClose();
-  };
 
   const handleExport = () => {
     if (activePanel === 'export') {
@@ -87,7 +63,7 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
     }
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      setExportString(btoa(raw));
+      setExportString(toBase64(raw));
     }
     setCopied(false);
     setActivePanel('export');
@@ -126,7 +102,7 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
 
     let decoded: string;
     try {
-      decoded = atob(trimmed);
+      decoded = fromBase64(trimmed);
     } catch {
       setImportError('Invalid base64 string.');
       return;
@@ -148,18 +124,11 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
     onSave(parsed);
 
     const bg = parsed.background;
-    const newImageUrl = bg?.imageUrl ?? '';
-    const newOpacity = bg?.opacity ?? 0.5;
-    const newColor = bg?.color ?? '#000000';
-    setImageUrl(newImageUrl);
-    setAppliedImageUrl(newImageUrl);
-    setOpacity(newOpacity);
-    setColor(newColor);
-    onPreview({
-      imageUrl: newImageUrl || undefined,
-      opacity: newOpacity,
-      color: newColor,
-    });
+    onPreview(bg ? {
+      imageUrl: bg.imageUrl,
+      opacity: bg.opacity ?? 0.5,
+      color: bg.color ?? '#000000',
+    } : undefined);
 
     setImportSuccess(true);
   };
@@ -192,73 +161,33 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
         </div>
       </div>
 
-      <div className="config-editor-section">
-        <h2 className="config-editor-section-title">Background</h2>
-
-        <div className="config-editor-field">
-          <span className="config-editor-label">Image URL</span>
-          <div className="config-editor-input-group">
-            <input
-              type="text"
-              className="config-editor-input"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              disabled={hasImage}
-            />
-            {hasImage ? (
-              <button
-                className="config-editor-btn config-editor-btn-remove"
-                onClick={removeImageUrl}
-              >
-                Remove
-              </button>
-            ) : (
-              <button
-                className="config-editor-btn config-editor-btn-apply"
-                onClick={applyImageUrl}
-                disabled={imageUrl.trim() === ''}
-              >
-                Apply
-              </button>
-            )}
-          </div>
-        </div>
-
-        {hasImage && (
-          <label className="config-editor-field">
-            <span className="config-editor-label">Overlay Opacity ({opacity})</span>
-            <input
-              type="range"
-              className="config-editor-range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={opacity}
-              onChange={(e) => { const v = parseFloat(e.target.value); setOpacity(v); updatePreview({ opacity: v }); }}
-            />
-          </label>
-        )}
-
-        <label className="config-editor-field">
-          <span className="config-editor-label">Color</span>
-          <input
-            type="color"
-            className="config-editor-color"
-            value={color}
-            onChange={(e) => { setColor(e.target.value); updatePreview({ color: e.target.value }); }}
-          />
-        </label>
-
-        <div className="config-editor-actions">
-          <button className="config-editor-btn config-editor-btn-save" onClick={handleSave}>
-            Save
-          </button>
-          <button className="config-editor-btn config-editor-btn-cancel" onClick={onClose}>
-            Cancel
-          </button>
-        </div>
+      <div className="config-editor-tabs">
+        <button
+          className={`config-editor-tab${tab === 'background' ? ' active' : ''}`}
+          onClick={() => setTab('background')}
+        >
+          Background
+        </button>
+        <button
+          className={`config-editor-tab${tab === 'links' ? ' active' : ''}`}
+          onClick={() => setTab('links')}
+        >
+          Links
+        </button>
       </div>
+
+      {tab === 'background' && (
+        <BackgroundTab
+          config={config}
+          onSave={onSave}
+          onClose={onClose}
+          onPreview={onPreview}
+        />
+      )}
+
+      {tab === 'links' && (
+        <LinksTab config={config} onSave={onSave} onClose={onClose} />
+      )}
 
       {activePanel !== 'none' && (
         <div className="config-editor-modal-overlay" onClick={closePanel}>

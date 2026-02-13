@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import type { LinkConfig, ModuleConfig } from '../types/config.ts';
+import type { LinkConfig, ModuleConfig } from '../../../types/config.ts';
 
 interface SearchBarProps {
   enabled: boolean;

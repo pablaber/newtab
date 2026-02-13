@@ -25,7 +25,12 @@ Open http://localhost:3542 in your browser. Edit `public/config.json` to customi
 
 ## Configuration
 
-All configuration lives in `public/config.json` and is persisted to the browser's localStorage. You can edit settings directly from the settings page, or import/export configs as base64 strings.
+All configuration lives in `public/config.json` and is persisted to the browser's localStorage. The settings page has two tabs:
+
+- **Background** — configure background image, overlay color, and opacity
+- **Links** — add, remove, rename, and reorder sections and links
+
+You can also import/export the full config as a base64 string from the settings header.
 
 ### Top-level
 

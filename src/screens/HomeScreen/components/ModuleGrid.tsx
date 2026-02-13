@@ -1,4 +1,4 @@
-import type { ModuleConfig } from '../types/config.ts';
+import type { ModuleConfig } from '../../../types/config.ts';
 import { LinkModule } from './LinkModule.tsx';
 
 interface ModuleGridProps {

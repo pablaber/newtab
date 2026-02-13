@@ -262,7 +262,38 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+}
+
+/* Tab Bar */
+.config-editor-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(var(--fg), 0.08);
+  padding-bottom: 0;
+}
+
+.config-editor-tab {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: rgba(var(--fg), 0.4);
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms;
+  margin-bottom: -1px;
+}
+
+.config-editor-tab:hover {
+  color: rgba(var(--fg), 0.7);
+}
+
+.config-editor-tab.active {
+  color: rgb(var(--fg));
+  border-bottom-color: rgba(var(--fg), 0.6);
 }
 
 .config-editor-title {
@@ -573,6 +604,125 @@
   border-radius: 6px;
 }
 
+/* Links Tab -- Section Cards */
+.config-editor-link-section {
+  background: rgba(var(--fg), 0.05);
+  border: 1px solid rgba(var(--fg), 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.config-editor-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.config-editor-section-header .config-editor-input {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+
+/* Links Tab -- Link Rows */
+.config-editor-link-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.config-editor-link-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.config-editor-link-fields .config-editor-input {
+  width: 100%;
+}
+
+.config-editor-link-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding-top: 6px;
+}
+
+/* Icon Buttons (arrows, remove) */
+.config-editor-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(var(--fg), 0.08);
+  border-radius: 6px;
+  background: rgba(var(--fg), 0.05);
+  color: rgba(var(--fg), 0.5);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+  flex-shrink: 0;
+}
+
+.config-editor-btn-icon:hover:not(:disabled) {
+  background: rgba(var(--fg), 0.12);
+  color: rgba(var(--fg), 0.8);
+}
+
+.config-editor-btn-icon:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.config-editor-btn-icon.danger:hover:not(:disabled) {
+  background: rgba(220, 50, 50, 0.25);
+  color: rgba(255, 120, 120, 0.9);
+}
+
+/* Add Buttons */
+.config-editor-btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  border: 1px dashed rgba(var(--fg), 0.15);
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.03);
+  color: rgba(var(--fg), 0.5);
+  cursor: pointer;
+  transition: background 150ms, color 150ms, border-color 150ms;
+}
+
+.config-editor-btn-add:hover {
+  background: rgba(var(--fg), 0.08);
+  color: rgba(var(--fg), 0.7);
+  border-color: rgba(var(--fg), 0.25);
+}
+
+/* Validation Error */
+.config-editor-field-error {
+  font-size: 0.8rem;
+  color: rgba(240, 80, 80, 0.9);
+  margin-top: 2px;
+}
+
+/* Links Tab -- Empty State */
+.config-editor-links-empty {
+  text-align: center;
+  padding: 32px 16px;
+  opacity: 0.4;
+  font-size: 0.95rem;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .content {
@@ -583,4 +733,11 @@
     grid-template-columns: 1fr;
   }
 
+  .config-editor-link-row {
+    flex-wrap: wrap;
+  }
+
+  .config-editor-link-fields {
+    width: 100%;
+  }
 }

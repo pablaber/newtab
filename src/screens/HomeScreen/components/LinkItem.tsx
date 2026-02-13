@@ -1,4 +1,4 @@
-import type { LinkConfig } from '../types/config.ts';
+import type { LinkConfig } from '../../../types/config.ts';
 
 interface LinkItemProps {
   link: LinkConfig;
