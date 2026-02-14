@@ -1,15 +1,11 @@
 name: Deploy Preview
 
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -25,18 +21,8 @@ jobs:
           VITE_HOSTED: 'true'
 
       - name: Deploy to Cloudflare Pages
-        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=newtab-preview --branch=${{ github.head_ref }}
-
-      - name: Comment preview URL on PR
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: preview-deploy
-          message: |
-            **Preview deployed!** :rocket:
-
-            ${{ steps.deploy.outputs.deployment-url }}
+          command: pages deploy dist --project-name=newtab-preview --branch=${{ github.ref_name }}
