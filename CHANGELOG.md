@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0](https://github.com/pablaber/newtab/compare/v0.6.1...v0.7.0) (2026-02-14)
+
+
+### Features
+
+* add hosted-only footer with attribution and coffee link ([66a3f6f](https://github.com/pablaber/newtab/commit/66a3f6fa7030d9f9543b9689301890895fd9a19f))
+* add isHosted environment flag for cloudflare pages ([d34b684](https://github.com/pablaber/newtab/commit/d34b68440c9c1aa912fe1b7a009281f28543711a))
+
+
+### Miscellaneous
+
+* add website link and hosted dev instructions to readme ([#31](https://github.com/pablaber/newtab/issues/31)) ([f13d724](https://github.com/pablaber/newtab/commit/f13d7243b6bb1b9ae99cfde2f74ea110da6c9f63))
+
 ## [0.6.1](https://github.com/pablaber/newtab/compare/v0.6.0...v0.6.1) (2026-02-14)
 
 
