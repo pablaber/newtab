@@ -4,6 +4,8 @@
 
 # newtab
 
+**[thenewtab.app](https://thenewtab.app)**
+
 A minimal, customizable new-tab homepage built with React and TypeScript. Configuration is stored in the browser's localStorage and is fully editable from a built-in settings page. On first load, a default `config.json` is used to seed the initial config.
 
 <p align="center">
@@ -28,6 +30,14 @@ npm run dev
 ```
 
 Open http://localhost:3542 in your browser. Use the settings page to customize, or edit `public/config.json` to change the default seed config.
+
+To simulate the hosted environment (as deployed to [thenewtab.app](https://thenewtab.app)):
+
+```bash
+VITE_HOSTED=true npm run dev
+```
+
+This enables hosted-only features like the attribution footer.
 
 ### Testing
 
