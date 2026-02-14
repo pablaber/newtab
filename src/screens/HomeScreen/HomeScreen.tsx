@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { AppConfig } from '../../types/config.ts';
+import { isHosted } from '../../env.ts';
 import { SearchBar } from './components/SearchBar.tsx';
 import { ModuleGrid } from './components/ModuleGrid.tsx';
 
@@ -70,6 +71,14 @@ export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
           </div>
         )}
       </div>
+      {isHosted && (
+        <footer className="hosted-footer">
+          <span>A website by Patrick Bacon-Blaber</span>
+          <a href="https://buymeacoffee.com/pablaber" target="_blank" rel="noopener noreferrer">
+            ☕ Buy Me A Coffee
+          </a>
+        </footer>
+      )}
     </>
   );
 }

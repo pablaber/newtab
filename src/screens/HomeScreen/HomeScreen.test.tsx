@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { HomeScreen } from './HomeScreen.tsx';
 import { mockConfig, mockHiddenModule } from '../../test/fixtures.ts';
 
+vi.mock('../../env.ts', () => ({ isHosted: false }));
+
 describe('HomeScreen', () => {
   it('renders settings button, search bar, and module grid', () => {
     render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
@@ -63,5 +65,30 @@ describe('HomeScreen', () => {
 
     await user.click(screen.getByRole('button', { name: 'Open Settings' }));
     expect(onOpenSettings).toHaveBeenCalledOnce();
+  });
+
+  it('does not render footer when not hosted', () => {
+    render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+    expect(screen.queryByText('A website by Patrick Bacon-Blaber')).not.toBeInTheDocument();
+  });
+
+  describe('when hosted', () => {
+    beforeEach(async () => {
+      const env = await import('../../env.ts');
+      vi.mocked(env).isHosted = true as never;
+    });
+
+    afterEach(async () => {
+      const env = await import('../../env.ts');
+      vi.mocked(env).isHosted = false as never;
+    });
+
+    it('renders footer with attribution and coffee link', () => {
+      render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+      expect(screen.getByText('A website by Patrick Bacon-Blaber')).toBeInTheDocument();
+      const link = screen.getByRole('link', { name: /Buy Me A Coffee/ });
+      expect(link).toHaveAttribute('href', 'https://buymeacoffee.com/pablaber');
+      expect(link).toHaveAttribute('target', '_blank');
+    });
   });
 });
