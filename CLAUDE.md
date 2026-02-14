@@ -63,6 +63,7 @@ Shared components used across screens stay in `src/components/`.
 
 ## Git
 
+- NEVER push directly to the main branch. Always create a feature branch and open a PR.
 - Branch pattern: `<type>/<short-description>` (e.g. `feat/add-search`, `fix/broken-links`, `chore/update-deps`)
 - Commit messages: single-line, lowercase, no Co-Authored-By lines
 - PR titles: conventional commit format without scope (e.g. `chore: add ci workflows`)
