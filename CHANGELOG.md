@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/pablaber/newtab/compare/v0.6.0...v0.6.1) (2026-02-14)
+
+
+### Miscellaneous
+
+* add cloudflare pages deploy to release workflow ([#28](https://github.com/pablaber/newtab/issues/28)) ([4b623e2](https://github.com/pablaber/newtab/commit/4b623e21d960e2de92ba6faf233283e52aeebbd9))
+
 ## [0.6.0](https://github.com/pablaber/newtab/compare/v0.5.0...v0.6.0) (2026-02-13)
 
 
