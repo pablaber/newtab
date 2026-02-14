@@ -75,6 +75,8 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+        env:
+          VITE_HOSTED: 'true'
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
