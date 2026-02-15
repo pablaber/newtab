@@ -8,6 +8,7 @@ describe('LinksTab', () => {
     config: mockConfig,
     onSave: vi.fn(),
     onClose: vi.fn(),
+    onConfigChange: vi.fn(),
   };
 
   beforeEach(() => {
@@ -122,7 +123,7 @@ describe('LinksTab', () => {
     expect(screen.queryByText('Clear All Links', { selector: 'h2' })).not.toBeInTheDocument();
   });
 
-  it('renders a top Save button that saves and closes', async () => {
+  it('renders a top Save button that calls onSave', async () => {
     const user = userEvent.setup();
     render(<LinksTab {...defaultProps} />);
 
@@ -133,6 +134,5 @@ describe('LinksTab', () => {
     await user.click(saveButtons[0]);
 
     expect(defaultProps.onSave).toHaveBeenCalledTimes(1);
-    expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });
 });

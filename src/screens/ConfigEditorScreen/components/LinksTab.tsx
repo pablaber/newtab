@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { AppConfig, ModuleConfig } from '../../../types/config.ts';
 
 const MAX_SECTION_NAME = 50;
@@ -15,14 +15,20 @@ interface LinksTabProps {
   config: AppConfig;
   onSave: (config: AppConfig) => void;
   onClose: () => void;
+  onConfigChange: (config: AppConfig) => void;
 }
 
-export function LinksTab({ config, onSave, onClose }: LinksTabProps) {
+export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabProps) {
   const [modules, setModules] = useState<ModuleConfig[]>(
     () => config.modules.map((m) => ({ ...m, links: m.links.map((l) => ({ ...l })) })),
   );
   const [submitted, setSubmitted] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  // Push link changes to the shared draft so they persist across tab switches
+  useEffect(() => {
+    onConfigChange({ ...config, modules });
+  }, [modules]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // --- Section handlers ---
 
@@ -164,7 +170,6 @@ export function LinksTab({ config, onSave, onClose }: LinksTabProps) {
     }));
 
     onSave({ ...config, modules: cleaned });
-    onClose();
   };
 
   const totalLinks = modules.reduce((sum, m) => sum + m.links.length, 0);

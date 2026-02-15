@@ -10,6 +10,7 @@ describe('GeneralTab', () => {
     onSave: vi.fn(),
     onClose: vi.fn(),
     onPreview: vi.fn(),
+    onConfigChange: vi.fn(),
   };
 
   beforeEach(() => {
