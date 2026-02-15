@@ -45,6 +45,28 @@ describe('ConfigEditorScreen', () => {
     localStorage.removeItem('newtab-config');
   });
 
+  it('saves and closes on successful import', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    const onClose = vi.fn();
+    render(<ConfigEditor {...defaultProps} onSave={onSave} onClose={onClose} />);
+
+    await user.click(screen.getByRole('button', { name: 'Import' }));
+
+    const modal = screen.getByText('Import Config').closest('.config-editor-modal')!;
+    const textarea = within(modal as HTMLElement).getByPlaceholderText('Paste exported base64 string here...');
+
+    const validConfig = JSON.stringify(mockConfig);
+    const encoded = btoa(validConfig);
+    await user.type(textarea, encoded);
+
+    const applyButton = within(modal as HTMLElement).getByRole('button', { name: 'Apply' });
+    await user.click(applyButton);
+
+    expect(onSave).toHaveBeenCalledWith(mockConfig);
+    expect(onClose).toHaveBeenCalled();
+  });
+
   it('shows import error on invalid base64 input', async () => {
     const user = userEvent.setup();
     render(<ConfigEditor {...defaultProps} />);
