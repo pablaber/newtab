@@ -54,7 +54,6 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
   const [copied, setCopied] = useState(false);
   const [importString, setImportString] = useState('');
   const [importError, setImportError] = useState('');
-  const [importSuccess, setImportSuccess] = useState(false);
 
   const handleExport = () => {
     if (activePanel === 'export') {
@@ -86,13 +85,11 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
     }
     setImportString('');
     setImportError('');
-    setImportSuccess(false);
     setActivePanel('import');
   };
 
   const handleImportApply = () => {
     setImportError('');
-    setImportSuccess(false);
 
     const trimmed = importString.trim();
     if (!trimmed) {
@@ -122,23 +119,13 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
     }
 
     onSave(parsed);
-
-    const bg = parsed.background;
-    onPreview(bg ? {
-      imageUrl: bg.imageUrl,
-      opacity: bg.opacity ?? 0.5,
-      color: bg.color ?? '#000000',
-      gradient: bg.gradient,
-    } : undefined);
-
-    setImportSuccess(true);
+    onClose();
   };
 
   const closePanel = () => {
     setActivePanel('none');
     setImportString('');
     setImportError('');
-    setImportSuccess(false);
     setCopied(false);
   };
 
@@ -229,15 +216,12 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
                 <textarea
                   className="config-editor-textarea"
                   value={importString}
-                  onChange={(e) => { setImportString(e.target.value); setImportError(''); setImportSuccess(false); }}
+                  onChange={(e) => { setImportString(e.target.value); setImportError(''); }}
                   rows={5}
                   placeholder="Paste exported base64 string here..."
                 />
                 {importError && (
                   <div className="config-editor-ie-error">{importError}</div>
-                )}
-                {importSuccess && (
-                  <div className="config-editor-ie-success">Config applied successfully.</div>
                 )}
                 <button
                   className="config-editor-btn config-editor-btn-apply"
