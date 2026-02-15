@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConfigEditor } from './ConfigEditorScreen.tsx';
 import { mockConfig } from '../../test/fixtures.ts';
+import type { AppConfig } from '../../types/config.ts';
 
 describe('ConfigEditorScreen', () => {
   const defaultProps = {
@@ -82,5 +83,51 @@ describe('ConfigEditorScreen', () => {
     await user.click(applyButton);
 
     expect(screen.getByText('Invalid base64 string.')).toBeInTheDocument();
+  });
+
+  it('preserves link changes when saving from the General tab', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<ConfigEditor {...defaultProps} onSave={onSave} />);
+
+    // Switch to Links tab and add a new section
+    await user.click(screen.getByRole('button', { name: 'Links' }));
+    await user.click(screen.getByRole('button', { name: 'Add Section' }));
+
+    // Fill in the new section name
+    const sectionInputs = screen.getAllByPlaceholderText('Section name');
+    await user.type(sectionInputs[0], 'New Section');
+
+    // Switch back to General tab and save
+    await user.click(screen.getByRole('button', { name: 'General' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    const savedConfig = onSave.mock.calls[0][0] as AppConfig;
+    // Should have 3 modules: the new one + the 2 original ones
+    expect(savedConfig.modules).toHaveLength(3);
+    expect(savedConfig.modules[0].title).toBe('New Section');
+  });
+
+  it('preserves general changes when saving from the Links tab', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<ConfigEditor {...defaultProps} onSave={onSave} />);
+
+    // Edit placeholder on General tab
+    const placeholderInput = screen.getByPlaceholderText('Filter links...');
+    await user.clear(placeholderInput);
+    await user.type(placeholderInput, 'Search...');
+
+    // Switch to Links tab and save
+    await user.click(screen.getByRole('button', { name: 'Links' }));
+    const saveButtons = screen.getAllByRole('button', { name: 'Save' });
+    await user.click(saveButtons[0]);
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    const savedConfig = onSave.mock.calls[0][0] as AppConfig;
+    expect(savedConfig.search?.placeholder).toBe('Search...');
+    // Original modules should still be there
+    expect(savedConfig.modules).toHaveLength(2);
   });
 });

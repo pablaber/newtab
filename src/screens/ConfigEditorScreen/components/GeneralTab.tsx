@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { AppConfig, BackgroundConfig, GradientDirection } from '../../../types/config.ts';
 
 const DIRECTION_ARROWS: { value: GradientDirection; arrow: string }[] = [
@@ -13,9 +13,10 @@ interface GeneralTabProps {
   onSave: (config: AppConfig) => void;
   onClose: () => void;
   onPreview: (background: BackgroundConfig) => void;
+  onConfigChange: (config: AppConfig) => void;
 }
 
-export function GeneralTab({ config, onSave, onClose, onPreview }: GeneralTabProps) {
+export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange }: GeneralTabProps) {
   const [imageUrl, setImageUrl] = useState(config.background?.imageUrl ?? '');
   const [appliedImageUrl, setAppliedImageUrl] = useState(config.background?.imageUrl ?? '');
   const [opacity, setOpacity] = useState(config.background?.opacity ?? 0.5);
@@ -26,6 +27,30 @@ export function GeneralTab({ config, onSave, onClose, onPreview }: GeneralTabPro
   const [placeholder, setPlaceholder] = useState(config.search?.placeholder ?? '');
 
   const hasImage = appliedImageUrl.trim() !== '';
+
+  // Push general-tab changes to the shared draft so they persist across tab switches
+  useEffect(() => {
+    const updated: AppConfig = {
+      ...config,
+      background: {
+        ...config.background,
+        imageUrl: appliedImageUrl || undefined,
+        opacity,
+        color,
+        gradient: {
+          enabled: gradientEnabled,
+          color2: gradientColor2,
+          direction: gradientDirection,
+        },
+      },
+      search: {
+        ...config.search,
+        enabled: config.search?.enabled ?? false,
+        placeholder: placeholder || undefined,
+      },
+    };
+    onConfigChange(updated);
+  }, [appliedImageUrl, opacity, color, gradientEnabled, gradientColor2, gradientDirection, placeholder]);// eslint-disable-line react-hooks/exhaustive-deps
 
   const buildGradient = (updates: { enabled?: boolean; color2?: string; direction?: GradientDirection } = {}) => ({
     enabled: updates.enabled ?? gradientEnabled,
@@ -79,7 +104,6 @@ export function GeneralTab({ config, onSave, onClose, onPreview }: GeneralTabPro
         placeholder: placeholder || undefined,
       },
     });
-    onClose();
   };
 
   return (

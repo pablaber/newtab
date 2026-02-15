@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { AppConfig, BackgroundConfig } from '../../types/config.ts';
 import { GeneralTab } from './components/GeneralTab.tsx';
 import { LinksTab } from './components/LinksTab.tsx';
@@ -49,11 +49,24 @@ interface ConfigEditorProps {
 
 export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEditorProps) {
   const [tab, setTab] = useState<Tab>('general');
+  const [draftConfig, setDraftConfig] = useState<AppConfig>(() => ({
+    ...config,
+    modules: config.modules.map((m) => ({ ...m, links: m.links.map((l) => ({ ...l })) })),
+  }));
   const [activePanel, setActivePanel] = useState<ImportExportPanel>('none');
   const [exportString, setExportString] = useState('');
   const [copied, setCopied] = useState(false);
   const [importString, setImportString] = useState('');
   const [importError, setImportError] = useState('');
+
+  const handleConfigChange = useCallback((updatedConfig: AppConfig) => {
+    setDraftConfig(updatedConfig);
+  }, []);
+
+  const handleSave = useCallback((configToSave: AppConfig) => {
+    onSave(configToSave);
+    onClose();
+  }, [onSave, onClose]);
 
   const handleExport = () => {
     if (activePanel === 'export') {
@@ -166,15 +179,21 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
 
       {tab === 'general' && (
         <GeneralTab
-          config={config}
-          onSave={onSave}
+          config={draftConfig}
+          onSave={handleSave}
           onClose={onClose}
           onPreview={onPreview}
+          onConfigChange={handleConfigChange}
         />
       )}
 
       {tab === 'links' && (
-        <LinksTab config={config} onSave={onSave} onClose={onClose} />
+        <LinksTab
+          config={draftConfig}
+          onSave={handleSave}
+          onClose={onClose}
+          onConfigChange={handleConfigChange}
+        />
       )}
 
       {activePanel !== 'none' && (
