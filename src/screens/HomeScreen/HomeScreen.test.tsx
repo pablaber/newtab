@@ -6,11 +6,32 @@ import { mockConfig, mockHiddenModule } from '../../test/fixtures.ts';
 vi.mock('../../env.ts', () => ({ isHosted: false }));
 
 describe('HomeScreen', () => {
-  it('renders settings button, search bar, and module grid', () => {
+  it('renders about button, settings button, search bar, and module grid', () => {
     render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+    expect(screen.getByLabelText('About')).toBeInTheDocument();
     expect(screen.getByLabelText('Settings')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Filter links...')).toBeInTheDocument();
     expect(screen.getByText('Favorites')).toBeInTheDocument();
+  });
+
+  it('opens about modal when about button is clicked', async () => {
+    const user = userEvent.setup();
+    render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+
+    await user.click(screen.getByLabelText('About'));
+    expect(screen.getByText('About')).toBeInTheDocument();
+    expect(screen.getByText(/clean, customizable new tab page/)).toBeInTheDocument();
+  });
+
+  it('closes about modal when back button is clicked', async () => {
+    const user = userEvent.setup();
+    render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+
+    await user.click(screen.getByLabelText('About'));
+    expect(screen.getByText(/clean, customizable new tab page/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.queryByText(/clean, customizable new tab page/)).not.toBeInTheDocument();
   });
 
   it('calls onOpenSettings when settings button is clicked', async () => {

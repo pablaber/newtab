@@ -3,6 +3,7 @@ import type { AppConfig } from '../../types/config.ts';
 import { isHosted } from '../../env.ts';
 import { SearchBar } from './components/SearchBar.tsx';
 import { ModuleGrid } from './components/ModuleGrid.tsx';
+import { AboutModal } from './components/AboutModal.tsx';
 
 interface HomeScreenProps {
   config: AppConfig;
@@ -11,6 +12,7 @@ interface HomeScreenProps {
 
 export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
   const [navigating, setNavigating] = useState<{ url: string; label: string } | null>(null);
+  const [showAbout, setShowAbout] = useState(false);
 
   const handleNavigate = useCallback((url: string, label: string) => {
     setNavigating({ url, label });
@@ -42,12 +44,21 @@ export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
 
   return (
     <>
-      <button className="config-button" tabIndex={-1} onClick={onOpenSettings} aria-label="Settings">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-        </svg>
-      </button>
+      <div className="top-right-buttons">
+        <button className="config-button" tabIndex={-1} onClick={() => setShowAbout(true)} aria-label="About">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+        </button>
+        <button className="config-button" tabIndex={-1} onClick={onOpenSettings} aria-label="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
+      </div>
       <div className="content">
         <SearchBar
           enabled={config.search?.enabled ?? false}
@@ -79,6 +90,7 @@ export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
           </a>
         </footer>
       )}
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
     </>
   );
 }
