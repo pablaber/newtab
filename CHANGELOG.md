@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/pablaber/newtab/compare/v0.7.0...v0.8.0) (2026-02-14)
+
+
+### Features
+
+* add about modal with info button on home screen ([#33](https://github.com/pablaber/newtab/issues/33)) ([233990b](https://github.com/pablaber/newtab/commit/233990b5cc115d929a41a58de1398f3c835bf911))
+* add preview deploy workflow for PRs ([#34](https://github.com/pablaber/newtab/issues/34)) ([cfb9701](https://github.com/pablaber/newtab/commit/cfb970157c71b049bbed87f14ba65b4271b20fa3))
+
 ## [0.7.0](https://github.com/pablaber/newtab/compare/v0.6.1...v0.7.0) (2026-02-14)
 
 

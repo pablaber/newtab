@@ -270,12 +270,18 @@
   font-size: 0.95rem;
 }
 
-/* Config Button */
-.config-button {
+/* Top Right Buttons */
+.top-right-buttons {
   position: fixed;
   top: 16px;
   right: 16px;
   z-index: 5;
+  display: flex;
+  gap: 8px;
+}
+
+/* Config Button */
+.config-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -962,10 +968,68 @@
   color: rgba(var(--fg), 0.6);
 }
 
+/* About Modal */
+.about-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.about-modal {
+  width: 90%;
+  max-width: 420px;
+  background: rgba(var(--dropdown-bg), 0.97);
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+}
+
+.about-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.about-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.about-modal-text {
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(var(--fg), 0.7);
+}
+
+.about-modal-back-btn {
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  background: rgba(var(--fg), 0.1);
+  color: rgba(var(--fg), 0.7);
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.about-modal-back-btn:hover {
+  background: rgba(var(--fg), 0.18);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .content {
-    padding: 24px 16px;
+    padding: 72px 16px 24px;
   }
 
   .module-grid {
