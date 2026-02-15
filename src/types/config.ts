@@ -2,6 +2,8 @@ export interface LinkConfig {
   url: string;
   label: string;
   icon?: string;
+  iconUrl?: string;
+  iconEmoji?: string;
   hidden?: boolean;
 }
 

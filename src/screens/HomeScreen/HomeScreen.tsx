@@ -1,9 +1,10 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { AppConfig } from '../../types/config.ts';
+import type { AppConfig, LinkConfig } from '../../types/config.ts';
 import { isHosted } from '../../env.ts';
 import { SearchBar } from './components/SearchBar.tsx';
 import { ModuleGrid } from './components/ModuleGrid.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
+import { getIconDisplay } from './components/iconDisplay.ts';
 
 interface HomeScreenProps {
   config: AppConfig;
@@ -25,16 +26,18 @@ export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
   );
 
   if (navigating) {
-    let favicon = '';
-    try {
-      const domain = new URL(navigating.url).hostname;
-      favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-    } catch { /* ignore */ }
+    const matchedLink: LinkConfig | undefined = config.modules
+      .flatMap((m) => m.links)
+      .find((l) => l.url === navigating.url);
+    const navIcon = matchedLink ? getIconDisplay(matchedLink) : null;
 
     return (
       <div className="navigating">
-        {favicon && (
-          <img className="navigating-favicon" src={favicon} alt="" width={24} height={24} />
+        {navIcon?.type === 'emoji' && (
+          <span className="navigating-emoji" role="img" aria-hidden="true">{navIcon.emoji}</span>
+        )}
+        {navIcon?.type === 'img' && (
+          <img className="navigating-favicon" src={navIcon.src} alt="" width={24} height={24} />
         )}
         <span className="navigating-text">Navigating to {navigating.label}</span>
         <div className="navigating-spinner" />

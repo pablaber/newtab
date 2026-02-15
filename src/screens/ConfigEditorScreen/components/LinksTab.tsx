@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { AppConfig, ModuleConfig } from '../../../types/config.ts';
+import type { AppConfig, ModuleConfig, LinkConfig } from '../../../types/config.ts';
+import { EmojiPicker } from './EmojiPicker.tsx';
 
 const MAX_SECTION_NAME = 50;
 const MAX_LINK_LABEL = 80;
@@ -24,6 +25,7 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
   );
   const [submitted, setSubmitted] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [emojiPickerTarget, setEmojiPickerTarget] = useState<{ si: number; li: number } | null>(null);
 
   // Push link changes to the shared draft so they persist across tab switches
   useEffect(() => {
@@ -110,6 +112,75 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
     setModules(modules.map((m, si) =>
       si === sectionIndex
         ? { ...m, links: m.links.map((l, li) => (li === linkIndex ? { ...l, hidden: !l.hidden } : l)) }
+        : m,
+    ));
+  };
+
+  // --- Icon handlers ---
+
+  type IconType = 'favicon' | 'url' | 'emoji';
+
+  const getIconType = (link: LinkConfig): IconType => {
+    if (link.iconEmoji) return 'emoji';
+    if (link.iconUrl) return 'url';
+    return 'favicon';
+  };
+
+  const setLinkIconType = (sectionIndex: number, linkIndex: number, iconType: IconType) => {
+    setModules(modules.map((m, si) =>
+      si === sectionIndex
+        ? {
+            ...m,
+            links: m.links.map((l, li) => {
+              if (li !== linkIndex) return l;
+              const updated = { ...l };
+              delete updated.iconUrl;
+              delete updated.iconEmoji;
+              if (iconType === 'url') updated.iconUrl = '';
+              return updated;
+            }),
+          }
+        : m,
+    ));
+  };
+
+  const setLinkIconUrl = (sectionIndex: number, linkIndex: number, iconUrl: string) => {
+    setModules(modules.map((m, si) =>
+      si === sectionIndex
+        ? { ...m, links: m.links.map((l, li) => (li === linkIndex ? { ...l, iconUrl } : l)) }
+        : m,
+    ));
+  };
+
+  const setLinkIconEmoji = (sectionIndex: number, linkIndex: number, iconEmoji: string) => {
+    setModules(modules.map((m, si) =>
+      si === sectionIndex
+        ? {
+            ...m,
+            links: m.links.map((l, li) => {
+              if (li !== linkIndex) return l;
+              const updated = { ...l, iconEmoji };
+              delete updated.iconUrl;
+              return updated;
+            }),
+          }
+        : m,
+    ));
+  };
+
+  const clearLinkIcon = (sectionIndex: number, linkIndex: number) => {
+    setModules(modules.map((m, si) =>
+      si === sectionIndex
+        ? {
+            ...m,
+            links: m.links.map((l, li) => {
+              if (li !== linkIndex) return l;
+              const updated = { ...l };
+              delete updated.iconUrl;
+              delete updated.iconEmoji;
+              return updated;
+            }),
+          }
         : m,
     ));
   };
@@ -283,7 +354,9 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
 
           {mod.links.length > 0 && <div className="config-editor-section-divider" />}
 
-          {mod.links.map((link, li) => (
+          {mod.links.map((link, li) => {
+            const iconType = getIconType(link);
+            return (
             <div key={li} className="config-editor-link-row">
               <div className="config-editor-link-fields">
                 <input
@@ -307,6 +380,56 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
                 {submitted && getFieldError(si, 'url', li) && (
                   <div className="config-editor-field-error">{getFieldError(si, 'url', li)}</div>
                 )}
+                <div className="config-editor-icon-row">
+                  <select
+                    className="config-editor-icon-type-select"
+                    value={iconType}
+                    onChange={(e) => {
+                      const val = e.target.value as IconType;
+                      if (val === 'emoji') {
+                        setEmojiPickerTarget({ si, li });
+                      } else {
+                        setLinkIconType(si, li, val);
+                      }
+                    }}
+                  >
+                    <option value="favicon">Favicon</option>
+                    <option value="url">Icon URL</option>
+                    <option value="emoji">Emoji</option>
+                  </select>
+                  {iconType === 'url' && (
+                    <input
+                      type="text"
+                      className="config-editor-input config-editor-icon-value"
+                      value={link.iconUrl || ''}
+                      onChange={(e) => setLinkIconUrl(si, li, e.target.value)}
+                      placeholder="https://example.com/icon.png"
+                    />
+                  )}
+                  {iconType === 'emoji' && (
+                    <button
+                      className="config-editor-emoji-btn"
+                      onClick={() => setEmojiPickerTarget({ si, li })}
+                      type="button"
+                    >
+                      <span className="config-editor-emoji-preview">{link.iconEmoji}</span>
+                      Change
+                    </button>
+                  )}
+                  {iconType !== 'favicon' && (
+                    <button
+                      className="config-editor-icon-clear"
+                      onClick={() => clearLinkIcon(si, li)}
+                      title="Reset to favicon"
+                      type="button"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="config-editor-link-actions">
                 <label className="config-editor-checkbox" title={mod.hidden ? 'Section is hidden' : (link.hidden ? 'Hidden — click to show' : 'Visible — click to hide')}>
@@ -361,7 +484,8 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
 
           <button className="config-editor-btn-add" onClick={() => addLink(si)} style={{ marginTop: 4 }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -384,6 +508,16 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
           Cancel
         </button>
       </div>
+
+      {emojiPickerTarget && (
+        <EmojiPicker
+          onSelect={(emoji) => {
+            setLinkIconEmoji(emojiPickerTarget.si, emojiPickerTarget.li, emoji);
+            setEmojiPickerTarget(null);
+          }}
+          onClose={() => setEmojiPickerTarget(null)}
+        />
+      )}
 
       {showClearConfirm && (
         <div className="config-editor-modal-overlay" onClick={() => setShowClearConfirm(false)}>

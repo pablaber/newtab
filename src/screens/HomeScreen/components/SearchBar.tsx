@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import type { LinkConfig, ModuleConfig } from '../../../types/config.ts';
 import { scoreLinkMatch } from './searchScoring.ts';
+import { getIconDisplay } from './iconDisplay.ts';
 
 const MAX_RESULTS = 5;
 
@@ -13,16 +14,6 @@ interface SearchBarProps {
 
 interface MatchedLink extends LinkConfig {
   moduleTitle: string;
-  favicon: string;
-}
-
-function getFaviconUrl(url: string): string {
-  try {
-    const domain = new URL(url).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-  } catch {
-    return '';
-  }
 }
 
 export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchBarProps) {
@@ -43,7 +34,6 @@ export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchB
             link: {
               ...link,
               moduleTitle: m.title,
-              favicon: link.icon || getFaviconUrl(link.url),
             },
             score,
           });
@@ -101,9 +91,12 @@ export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchB
                   }}
                 >
                   <span className="search-dropdown-left">
-                    {link.favicon && (
-                      <img className="search-dropdown-favicon" src={link.favicon} alt="" width={16} height={16} />
-                    )}
+                    {(() => {
+                      const icon = getIconDisplay(link);
+                      if (icon?.type === 'emoji') return <span className="search-dropdown-emoji">{icon.emoji}</span>;
+                      if (icon?.type === 'img') return <img className="search-dropdown-favicon" src={icon.src} alt="" width={16} height={16} />;
+                      return null;
+                    })()}
                     <span className="search-dropdown-label">{link.label}</span>
                   </span>
                   <span className="search-dropdown-module">{link.moduleTitle}</span>

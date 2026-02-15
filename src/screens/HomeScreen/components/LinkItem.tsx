@@ -1,21 +1,13 @@
 import type { LinkConfig } from '../../../types/config.ts';
+import { getIconDisplay } from './iconDisplay.ts';
 
 interface LinkItemProps {
   link: LinkConfig;
   onNavigate: (url: string, label: string) => void;
 }
 
-function getFaviconUrl(url: string): string {
-  try {
-    const domain = new URL(url).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-  } catch {
-    return '';
-  }
-}
-
 export function LinkItem({ link, onNavigate }: LinkItemProps) {
-  const iconSrc = link.icon || getFaviconUrl(link.url);
+  const icon = getIconDisplay(link);
 
   return (
     <a
@@ -26,10 +18,15 @@ export function LinkItem({ link, onNavigate }: LinkItemProps) {
         onNavigate(link.url, link.label);
       }}
     >
-      {iconSrc && (
+      {icon?.type === 'emoji' && (
+        <span className="link-item-emoji" role="img" aria-hidden="true">
+          {icon.emoji}
+        </span>
+      )}
+      {icon?.type === 'img' && (
         <img
           className="link-item-icon"
-          src={iconSrc}
+          src={icon.src}
           alt=""
           width={20}
           height={20}

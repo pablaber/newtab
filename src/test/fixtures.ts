@@ -11,6 +11,18 @@ export const mockLinkWithIcon: LinkConfig = {
   icon: 'https://example.com/icon.png',
 };
 
+export const mockLinkWithIconUrl: LinkConfig = {
+  url: 'https://example.com',
+  label: 'Custom Icon URL',
+  iconUrl: 'https://example.com/custom-icon.png',
+};
+
+export const mockLinkWithEmoji: LinkConfig = {
+  url: 'https://example.com',
+  label: 'Emoji Link',
+  iconEmoji: '🚀',
+};
+
 export const mockHiddenLink: LinkConfig = {
   url: 'https://hidden.com',
   label: 'Hidden Link',
