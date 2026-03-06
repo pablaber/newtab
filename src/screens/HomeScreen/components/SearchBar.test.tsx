@@ -1,9 +1,14 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { HotkeysProvider } from '@tanstack/react-hotkeys';
 import { SearchBar } from './SearchBar.tsx';
 import { scoreMatch, scoreLinkMatch } from './searchScoring.ts';
 import { mockModule, mockModuleWithHiddenLinks } from '../../../test/fixtures.ts';
 import type { ModuleConfig } from '../../../types/config.ts';
+
+function renderWithHotkeys(ui: React.ReactElement) {
+  return render(<HotkeysProvider>{ui}</HotkeysProvider>);
+}
 
 const modules = [mockModule, mockModuleWithHiddenLinks];
 
@@ -250,5 +255,69 @@ describe('SearchBar', () => {
     await user.keyboard('{Escape}');
     expect(screen.queryByText('GitHub')).not.toBeInTheDocument();
     expect(input).toHaveValue('');
+  });
+
+  it('renders the kbd badge when enabled', () => {
+    renderWithHotkeys(
+      <SearchBar enabled={true} placeholder="Filter..." modules={modules} onNavigate={vi.fn()} />,
+    );
+    // kbd is aria-hidden, so query by element tag
+    const kbd = document.querySelector('kbd');
+    expect(kbd).toBeInTheDocument();
+  });
+
+  it('kbd badge has hidden class when input is focused', () => {
+    renderWithHotkeys(
+      <SearchBar enabled={true} placeholder="Filter..." modules={modules} onNavigate={vi.fn()} />,
+    );
+    const input = screen.getByPlaceholderText('Filter...');
+    const kbd = document.querySelector('kbd')!;
+
+    // Initially the input has autoFocus, so it starts focused — badge is hidden
+    fireEvent.focus(input);
+    expect(kbd).toHaveClass('search-bar-kbd--hidden');
+  });
+
+  it('kbd badge has hidden class when query is non-empty', async () => {
+    const user = userEvent.setup();
+    renderWithHotkeys(
+      <SearchBar enabled={true} placeholder="Filter..." modules={modules} onNavigate={vi.fn()} />,
+    );
+    const input = screen.getByPlaceholderText('Filter...');
+    const kbd = document.querySelector('kbd')!;
+
+    fireEvent.blur(input);
+    await user.type(input, 'g');
+    expect(kbd).toHaveClass('search-bar-kbd--hidden');
+  });
+
+  it('kbd badge does not have hidden class when input is blurred and query is empty', () => {
+    renderWithHotkeys(
+      <SearchBar enabled={true} placeholder="Filter..." modules={modules} onNavigate={vi.fn()} />,
+    );
+    const input = screen.getByPlaceholderText('Filter...');
+    const kbd = document.querySelector('kbd')!;
+
+    fireEvent.blur(input);
+    expect(kbd).not.toHaveClass('search-bar-kbd--hidden');
+  });
+
+  it('Mod+K focuses the search input', async () => {
+    const user = userEvent.setup();
+    renderWithHotkeys(
+      <>
+        <button>other</button>
+        <SearchBar enabled={true} placeholder="Filter..." modules={modules} onNavigate={vi.fn()} />
+      </>,
+    );
+    const input = screen.getByPlaceholderText('Filter...');
+
+    // Move focus to the other button so the input is not focused
+    await user.click(screen.getByRole('button', { name: 'other' }));
+    expect(document.activeElement).not.toBe(input);
+
+    // In jsdom (Linux), Mod resolves to Control; fire Ctrl+K
+    await user.keyboard('{Control>}k{/Control}');
+    expect(document.activeElement).toBe(input);
   });
 });
