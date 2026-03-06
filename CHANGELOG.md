@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.0](https://github.com/pablaber/newtab/compare/v0.8.0...v0.9.0) (2026-03-06)
+
+
+### Features
+
+* add cmd+k hotkey to focus search bar with kbd badge indicator ([#47](https://github.com/pablaber/newtab/issues/47)) ([4a373a1](https://github.com/pablaber/newtab/commit/4a373a1ba1586526ffc145eb30e67a2b2c3b9f34))
+* auto-save and navigate home after importing config ([#41](https://github.com/pablaber/newtab/issues/41)) ([4746465](https://github.com/pablaber/newtab/commit/474646588432bb0d751829cf78ed00d45e65dedc))
+
+
+### Bug Fixes
+
+* increase mobile content top padding to prevent icon overlap with search bar ([#39](https://github.com/pablaber/newtab/issues/39)) ([667ca9a](https://github.com/pablaber/newtab/commit/667ca9a4bdd94ca52a24993b00ec5097cc26f8f3))
+* preserve changes across config editor tabs when saving ([#43](https://github.com/pablaber/newtab/issues/43)) ([9f6938f](https://github.com/pablaber/newtab/commit/9f6938f903c3f0d8e8d5230a8b97025ee71e0e8c))
+
 ## [0.8.0](https://github.com/pablaber/newtab/compare/v0.7.0...v0.8.0) (2026-02-14)
 
 
