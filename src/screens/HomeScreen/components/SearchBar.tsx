@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import type { LinkConfig, ModuleConfig } from '../../../types/config.ts';
 import { scoreLinkMatch } from './searchScoring.ts';
 
 const MAX_RESULTS = 5;
+
+function isMac(): boolean {
+  return /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+}
 
 interface SearchBarProps {
   enabled: boolean;
@@ -28,7 +33,13 @@ function getFaviconUrl(url: string): string {
 export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+
+  useHotkey('Mod+K', () => {
+    inputRef.current?.focus();
+  }, { preventDefault: true });
 
   const matches: MatchedLink[] = useMemo(() => {
     if (!query) return [];
@@ -62,6 +73,9 @@ export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchB
 
   if (!enabled) return null;
 
+  const kbdHidden = isFocused || query.length > 0;
+  const kbdLabel = isMac() ? '⌘K' : 'Ctrl K';
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Escape') {
       setQuery('');
@@ -80,14 +94,20 @@ export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchB
     <div className="search-bar-container">
       <div className="search-bar-wrapper">
         <input
-          className="search-bar"
+          ref={inputRef}
+          className={`search-bar${kbdHidden ? '' : ' search-bar--has-kbd'}`}
           type="text"
           placeholder={placeholder}
           value={query}
           onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
           onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           autoFocus
         />
+        <kbd className={`search-bar-kbd${kbdHidden ? ' search-bar-kbd--hidden' : ''}`} aria-hidden="true">
+          {kbdLabel}
+        </kbd>
         {matches.length > 0 && (
           <ul className="search-dropdown" ref={listRef}>
             {matches.map((link, i) => (
