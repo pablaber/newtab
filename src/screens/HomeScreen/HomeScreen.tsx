@@ -108,6 +108,8 @@ export function HomeScreen({ config, onSaveConfig, onOpenSettings }: HomeScreenP
           config={config}
           onSave={onSaveConfig}
           onClose={() => setShowCommands(false)}
+          onOpenSettings={onOpenSettings}
+          onOpenAbout={() => setShowAbout(true)}
         />
       )}
     </>

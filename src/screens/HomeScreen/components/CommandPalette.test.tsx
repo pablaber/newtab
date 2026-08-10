@@ -8,9 +8,19 @@ function renderPalette(
   config: AppConfig = mockConfig,
   onSave = vi.fn(),
   onClose = vi.fn(),
+  onOpenSettings = vi.fn(),
+  onOpenAbout = vi.fn(),
 ) {
-  render(<CommandPalette config={config} onSave={onSave} onClose={onClose} />);
-  return { onSave, onClose };
+  render(
+    <CommandPalette
+      config={config}
+      onSave={onSave}
+      onClose={onClose}
+      onOpenSettings={onOpenSettings}
+      onOpenAbout={onOpenAbout}
+    />,
+  );
+  return { onSave, onClose, onOpenSettings, onOpenAbout };
 }
 
 async function openAddLinkForm(user: ReturnType<typeof userEvent.setup>) {
@@ -37,9 +47,29 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
     renderPalette();
 
-    await user.keyboard('{ArrowDown}{Enter}');
+    await user.keyboard('{Enter}');
     expect(screen.getByRole('heading', { name: 'Add Link' })).toBeInTheDocument();
     expect(screen.getByLabelText('Link URL')).toHaveFocus();
+  });
+
+  it('opens settings and closes the command palette', async () => {
+    const user = userEvent.setup();
+    const { onClose, onOpenSettings } = renderPalette();
+
+    await user.click(screen.getByRole('option', { name: /Open Settings/ }));
+
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(onOpenSettings).toHaveBeenCalledOnce();
+  });
+
+  it('opens About and closes the command palette', async () => {
+    const user = userEvent.setup();
+    const { onClose, onOpenAbout } = renderPalette();
+
+    await user.click(screen.getByRole('option', { name: /About/ }));
+
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(onOpenAbout).toHaveBeenCalledOnce();
   });
 
   it('closes on Escape and backdrop click', async () => {
@@ -228,10 +258,10 @@ describe('CommandPalette', () => {
     renderPalette();
 
     const close = screen.getByRole('button', { name: 'Close commands' });
-    const option = screen.getByRole('option', { name: /Add Link/ });
+    const lastOption = screen.getByRole('option', { name: /About/ });
     close.focus();
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab', shiftKey: true });
-    expect(option).toHaveFocus();
+    expect(lastOption).toHaveFocus();
 
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab' });
     expect(close).toHaveFocus();

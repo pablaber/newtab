@@ -3,8 +3,8 @@ import { useHotkey } from '@tanstack/react-hotkeys';
 import type { AppConfig, ModuleConfig } from '../../../types/config.ts';
 import { ensureProtocol, MAX_LINK_LABEL, MAX_SECTION_NAME } from '../../../utils/linkConfig.ts';
 
-type CommandId = 'add-link';
-type PaletteView = 'commands' | CommandId;
+type CommandId = 'add-link' | 'open-settings' | 'about';
+type PaletteView = 'commands' | 'add-link';
 
 interface CommandDefinition {
   id: CommandId;
@@ -20,15 +20,29 @@ const COMMANDS = [
     description: 'Create a link in a category',
     keywords: ['bookmark', 'url', 'folder', 'category'],
   },
+  {
+    id: 'open-settings',
+    label: 'Open Settings',
+    description: 'Customize your new tab page',
+    keywords: ['config', 'preferences', 'edit'],
+  },
+  {
+    id: 'about',
+    label: 'About',
+    description: 'View app information and links',
+    keywords: ['info', 'version', 'github'],
+  },
 ] satisfies readonly CommandDefinition[];
 
 interface CommandPaletteProps {
   config: AppConfig;
   onSave: (config: AppConfig) => void;
   onClose: () => void;
+  onOpenSettings: () => void;
+  onOpenAbout: () => void;
 }
 
-interface AddLinkFormProps extends CommandPaletteProps {
+interface AddLinkFormProps extends Pick<CommandPaletteProps, 'config' | 'onSave' | 'onClose'> {
   onBack: () => void;
 }
 
@@ -294,7 +308,41 @@ function AddLinkForm({ config, onSave, onClose, onBack }: AddLinkFormProps) {
   );
 }
 
-export function CommandPalette({ config, onSave, onClose }: CommandPaletteProps) {
+function CommandIcon({ id }: { id: CommandId }) {
+  if (id === 'open-settings') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      </svg>
+    );
+  }
+
+  if (id === 'about') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
+
+export function CommandPalette({
+  config,
+  onSave,
+  onClose,
+  onOpenSettings,
+  onOpenAbout,
+}: CommandPaletteProps) {
   const [view, setView] = useState<PaletteView>('commands');
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -327,7 +375,17 @@ export function CommandPalette({ config, onSave, onClose }: CommandPaletteProps)
   }, [view]);
 
   const activateCommand = (command: CommandDefinition) => {
-    setView(command.id);
+    if (command.id === 'add-link') {
+      setView(command.id);
+      return;
+    }
+
+    onClose();
+    if (command.id === 'open-settings') {
+      onOpenSettings();
+    } else {
+      onOpenAbout();
+    }
   };
 
   const handleCommandKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -434,10 +492,7 @@ export function CommandPalette({ config, onSave, onClose }: CommandPaletteProps)
                   onClick={() => activateCommand(command)}
                 >
                   <span className="command-list-icon" aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 5v14" />
-                      <path d="M5 12h14" />
-                    </svg>
+                    <CommandIcon id={command.id} />
                   </span>
                   <span className="command-list-copy">
                     <span className="command-list-label">{command.label}</span>
