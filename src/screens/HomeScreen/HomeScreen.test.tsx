@@ -7,7 +7,7 @@ vi.mock('../../env.ts', () => ({ isHosted: false }));
 
 describe('HomeScreen', () => {
   it('renders about button, settings button, search bar, and module grid', () => {
-    render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
     expect(screen.getByLabelText('About')).toBeInTheDocument();
     expect(screen.getByLabelText('Settings')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Filter links...')).toBeInTheDocument();
@@ -16,7 +16,7 @@ describe('HomeScreen', () => {
 
   it('opens about modal when about button is clicked', async () => {
     const user = userEvent.setup();
-    render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
 
     await user.click(screen.getByLabelText('About'));
     expect(screen.getByText('About')).toBeInTheDocument();
@@ -25,7 +25,7 @@ describe('HomeScreen', () => {
 
   it('closes about modal when back button is clicked', async () => {
     const user = userEvent.setup();
-    render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
 
     await user.click(screen.getByLabelText('About'));
     expect(screen.getByText(/clean, customizable new tab page/)).toBeInTheDocument();
@@ -37,10 +37,37 @@ describe('HomeScreen', () => {
   it('calls onOpenSettings when settings button is clicked', async () => {
     const user = userEvent.setup();
     const onOpenSettings = vi.fn();
-    render(<HomeScreen config={mockConfig} onOpenSettings={onOpenSettings} />);
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={onOpenSettings} />);
 
     await user.click(screen.getByLabelText('Settings'));
     expect(onOpenSettings).toHaveBeenCalledOnce();
+  });
+
+  it('opens commands with Mod+P and closes the About modal', async () => {
+    const user = userEvent.setup();
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
+
+    await user.click(screen.getByLabelText('About'));
+    expect(screen.getByText(/clean, customizable new tab page/)).toBeInTheDocument();
+
+    // In jsdom (Linux), Mod resolves to Control.
+    await user.keyboard('{Control>}p{/Control}');
+    expect(screen.queryByText(/clean, customizable new tab page/)).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Commands' })).toBeInTheDocument();
+  });
+
+  it('restores the search hotkey after the command palette closes', async () => {
+    const user = userEvent.setup();
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
+    const search = screen.getByPlaceholderText('Filter links...');
+
+    await user.keyboard('{Control>}p{/Control}');
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByLabelText('Settings'));
+    expect(search).not.toHaveFocus();
+
+    await user.keyboard('{Control>}k{/Control}');
+    expect(search).toHaveFocus();
   });
 
   it('shows navigating state after a link is clicked', async () => {
@@ -53,7 +80,7 @@ describe('HomeScreen', () => {
       value: { ...window.location, href: originalLocation },
     });
 
-    render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
 
     await user.click(screen.getByText('GitHub'));
     expect(screen.getByText('Navigating to GitHub')).toBeInTheDocument();
@@ -61,7 +88,7 @@ describe('HomeScreen', () => {
 
   it('shows empty state with search bar when no modules exist', () => {
     const emptyConfig = { ...mockConfig, modules: [] };
-    render(<HomeScreen config={emptyConfig} onOpenSettings={vi.fn()} />);
+    render(<HomeScreen config={emptyConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
 
     expect(screen.getByPlaceholderText('Filter links...')).toBeInTheDocument();
     expect(screen.getByText('No links to show yet.')).toBeInTheDocument();
@@ -71,7 +98,7 @@ describe('HomeScreen', () => {
 
   it('shows empty state with search bar when all modules are hidden', () => {
     const hiddenConfig = { ...mockConfig, modules: [mockHiddenModule] };
-    render(<HomeScreen config={hiddenConfig} onOpenSettings={vi.fn()} />);
+    render(<HomeScreen config={hiddenConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
 
     expect(screen.getByPlaceholderText('Filter links...')).toBeInTheDocument();
     expect(screen.getByText('No links to show yet.')).toBeInTheDocument();
@@ -82,14 +109,14 @@ describe('HomeScreen', () => {
     const user = userEvent.setup();
     const onOpenSettings = vi.fn();
     const emptyConfig = { ...mockConfig, modules: [] };
-    render(<HomeScreen config={emptyConfig} onOpenSettings={onOpenSettings} />);
+    render(<HomeScreen config={emptyConfig} onSaveConfig={vi.fn()} onOpenSettings={onOpenSettings} />);
 
     await user.click(screen.getByRole('button', { name: 'Open Settings' }));
     expect(onOpenSettings).toHaveBeenCalledOnce();
   });
 
   it('does not render footer when not hosted', () => {
-    render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
     expect(screen.queryByText('A website by Patrick Bacon-Blaber')).not.toBeInTheDocument();
   });
 
@@ -105,7 +132,7 @@ describe('HomeScreen', () => {
     });
 
     it('renders footer with attribution and coffee link', () => {
-      render(<HomeScreen config={mockConfig} onOpenSettings={vi.fn()} />);
+      render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
       expect(screen.getByText('A website by Patrick Bacon-Blaber')).toBeInTheDocument();
       const link = screen.getByRole('link', { name: /Buy Me A Coffee/ });
       expect(link).toHaveAttribute('href', 'https://buymeacoffee.com/pablaber');
