@@ -230,9 +230,12 @@ function AddLinkForm({ config, onSave, onClose, onBack }: AddLinkFormProps) {
             setCategory(event.target.value);
             setSelectedCategory(null);
             setShowCategories(true);
-            setActiveCategoryIndex(-1);
+            setActiveCategoryIndex(0);
           }}
-          onFocus={() => setShowCategories(true)}
+          onFocus={() => {
+            setShowCategories(true);
+            setActiveCategoryIndex(0);
+          }}
           onKeyDown={handleCategoryKeyDown}
           placeholder="Choose or create a category"
           maxLength={MAX_SECTION_NAME}

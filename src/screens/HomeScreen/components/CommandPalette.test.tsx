@@ -200,9 +200,28 @@ describe('CommandPalette', () => {
 
     const categoryInput = screen.getByLabelText('Folder / category');
     await user.click(categoryInput);
-    await user.keyboard('{ArrowDown}{Enter}');
+    expect(screen.getByRole('option', { name: 'Favorites' })).toHaveClass('selected');
+    await user.keyboard('{Enter}');
     expect(categoryInput).toHaveValue('Favorites');
     expect(categoryInput).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('automatically activates the create option when no categories match', async () => {
+    const user = userEvent.setup();
+    renderPalette();
+    await openAddLinkForm(user);
+
+    const categoryInput = screen.getByLabelText('Folder / category');
+    await user.type(categoryInput, 'Brand New');
+    const createOption = screen.getByRole('option', { name: /Create new category.*Brand New/ });
+
+    expect(createOption).toHaveClass('selected');
+    expect(categoryInput).toHaveAttribute('aria-activedescendant', createOption.id);
+
+    await user.keyboard('{Enter}');
+    expect(categoryInput).toHaveValue('Brand New');
+    expect(categoryInput).toHaveAttribute('aria-expanded', 'false');
+    expect(createOption).not.toBeInTheDocument();
   });
 
   it('traps focus within the dialog', () => {
