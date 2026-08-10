@@ -575,6 +575,12 @@
   transition: background 150ms, color 150ms, border-color 150ms;
 }
 
+.config-editor-foreground-btn {
+  width: auto;
+  padding: 0 14px;
+  font-size: 0.85rem;
+}
+
 .config-editor-direction-btn:hover {
   background: rgba(var(--fg), 0.12);
   color: rgba(var(--fg), 0.7);

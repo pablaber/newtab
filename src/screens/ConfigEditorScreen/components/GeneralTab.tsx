@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
-import type { AppConfig, BackgroundConfig, GradientDirection } from '../../../types/config.ts';
+import type { AppConfig, BackgroundConfig, ForegroundSetting, GradientDirection } from '../../../types/config.ts';
 
 const DIRECTION_ARROWS: { value: GradientDirection; arrow: string }[] = [
   { value: 'up', arrow: '↑' },
   { value: 'down', arrow: '↓' },
   { value: 'left', arrow: '←' },
   { value: 'right', arrow: '→' },
+];
+
+const FOREGROUND_OPTIONS: { value: ForegroundSetting; label: string }[] = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
 ];
 
 interface GeneralTabProps {
@@ -24,25 +30,29 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
   const [gradientEnabled, setGradientEnabled] = useState(config.background?.gradient?.enabled ?? false);
   const [gradientColor2, setGradientColor2] = useState(config.background?.gradient?.color2 ?? '#000000');
   const [gradientDirection, setGradientDirection] = useState<GradientDirection>(config.background?.gradient?.direction ?? 'down');
+  const [foreground, setForeground] = useState<ForegroundSetting>(config.background?.foreground ?? 'auto');
   const [placeholder, setPlaceholder] = useState(config.search?.placeholder ?? '');
 
   const hasImage = appliedImageUrl.trim() !== '';
+
+  const currentBackground = (): BackgroundConfig => ({
+    ...config.background,
+    imageUrl: appliedImageUrl || undefined,
+    opacity,
+    color,
+    foreground,
+    gradient: {
+      enabled: gradientEnabled,
+      color2: gradientColor2,
+      direction: gradientDirection,
+    },
+  });
 
   // Push general-tab changes to the shared draft so they persist across tab switches
   useEffect(() => {
     const updated: AppConfig = {
       ...config,
-      background: {
-        ...config.background,
-        imageUrl: appliedImageUrl || undefined,
-        opacity,
-        color,
-        gradient: {
-          enabled: gradientEnabled,
-          color2: gradientColor2,
-          direction: gradientDirection,
-        },
-      },
+      background: currentBackground(),
       search: {
         ...config.search,
         enabled: config.search?.enabled ?? false,
@@ -50,7 +60,7 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
       },
     };
     onConfigChange(updated);
-  }, [appliedImageUrl, opacity, color, gradientEnabled, gradientColor2, gradientDirection, placeholder]);// eslint-disable-line react-hooks/exhaustive-deps
+  }, [appliedImageUrl, opacity, color, foreground, gradientEnabled, gradientColor2, gradientDirection, placeholder]);// eslint-disable-line react-hooks/exhaustive-deps
 
   const buildGradient = (updates: { enabled?: boolean; color2?: string; direction?: GradientDirection } = {}) => ({
     enabled: updates.enabled ?? gradientEnabled,
@@ -62,12 +72,14 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
     imageUrl?: string;
     opacity?: number;
     color?: string;
+    foreground?: ForegroundSetting;
     gradient?: { enabled?: boolean; color2?: string; direction?: GradientDirection };
   }) => {
     const next: BackgroundConfig = {
       imageUrl: (updates.imageUrl ?? appliedImageUrl) || undefined,
       opacity: updates.opacity ?? opacity,
       color: updates.color ?? color,
+      foreground: updates.foreground ?? foreground,
       gradient: buildGradient(updates.gradient),
     };
     onPreview(next);
@@ -87,17 +99,7 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
   const handleSave = () => {
     onSave({
       ...config,
-      background: {
-        ...config.background,
-        imageUrl: appliedImageUrl || undefined,
-        opacity,
-        color,
-        gradient: {
-          enabled: gradientEnabled,
-          color2: gradientColor2,
-          direction: gradientDirection,
-        },
-      },
+      background: currentBackground(),
       search: {
         ...config.search,
         enabled: config.search?.enabled ?? false,
@@ -212,6 +214,26 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
             </div>
           </>
         )}
+
+        <div className="config-editor-field">
+          <span className="config-editor-label">Foreground</span>
+          <div className="config-editor-direction-row" role="group" aria-label="Foreground">
+            {FOREGROUND_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`config-editor-direction-btn config-editor-foreground-btn${foreground === opt.value ? ' active' : ''}`}
+                aria-pressed={foreground === opt.value}
+                onClick={() => {
+                  setForeground(opt.value);
+                  updatePreview({ foreground: opt.value });
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="config-editor-section config-editor-section-gap">

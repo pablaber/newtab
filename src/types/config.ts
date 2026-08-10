@@ -21,11 +21,15 @@ export interface GradientConfig {
   direction: GradientDirection;
 }
 
+export type ForegroundSetting = 'auto' | 'light' | 'dark';
+
 export interface BackgroundConfig {
   imageUrl?: string;
   opacity?: number;
   color?: string;
   gradient?: GradientConfig;
+  /** Foreground content color: `auto` derives it from the background. */
+  foreground?: ForegroundSetting;
 }
 
 export interface SearchConfig {

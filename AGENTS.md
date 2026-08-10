@@ -36,7 +36,8 @@ src/
 ├── hooks/
 │   └── useConfig.ts       — fetches /config.json, persists to localStorage
 ├── utils/
-│   └── linkConfig.ts     — shared link constraints and URL normalization
+│   ├── linkConfig.ts     — shared link constraints and URL normalization
+│   └── foreground.ts     — foreground (text color) resolution from background config
 ├── index.css              — base reset + CSS custom properties
 ├── main.tsx
 └── types/
@@ -57,7 +58,7 @@ Shared components used across screens stay in `src/components/`.
 
 ## Style
 
-- Adaptive text color via CSS custom properties — `--fg` (RGB triplet) is set dynamically based on background color luminance (`0, 0, 0` on light backgrounds, `255, 255, 255` on dark). All text and translucent surfaces must use `rgb(var(--fg))` / `rgba(var(--fg), <alpha>)` instead of hardcoded `#fff` or `rgba(255,255,255,...)`.
+- Adaptive text color via CSS custom properties — `--fg` (RGB triplet) is set dynamically by `resolveForeground` in `src/utils/foreground.ts` (`0, 0, 0` on light backgrounds, `255, 255, 255` on dark), or forced by the `background.foreground` setting (`auto` | `light` | `dark`). All text and translucent surfaces must use `rgb(var(--fg))` / `rgba(var(--fg), <alpha>)` instead of hardcoded `#fff` or `rgba(255,255,255,...)`.
 - `--dropdown-bg` (RGB triplet) is used for dropdown surfaces, also flips with background luminance.
 - Translucent cards use `rgba(var(--fg), 0.05)`
 - System font stack
