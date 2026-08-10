@@ -4,6 +4,7 @@
     "imageUrl": "",
     "opacity": 0.4,
     "color": "#1a1a2e",
+    "foreground": "auto",
     "gradient": {
       "enabled": true,
       "color2": "#2b82fb",
