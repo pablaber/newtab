@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/pablaber/newtab/compare/v0.9.0...v0.10.0) (2026-08-10)
+
+
+### Features
+
+* add command palette link creation ([#48](https://github.com/pablaber/newtab/issues/48)) ([0799394](https://github.com/pablaber/newtab/commit/0799394641b3fc9847ed15284741a4e3a67f5316))
+
 ## [0.9.0](https://github.com/pablaber/newtab/compare/v0.8.0...v0.9.0) (2026-03-06)
 
 
