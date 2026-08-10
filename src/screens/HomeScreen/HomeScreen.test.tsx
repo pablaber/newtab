@@ -56,6 +56,29 @@ describe('HomeScreen', () => {
     expect(screen.getByRole('dialog', { name: 'Commands' })).toBeInTheDocument();
   });
 
+  it('opens settings from the command palette', async () => {
+    const user = userEvent.setup();
+    const onOpenSettings = vi.fn();
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={onOpenSettings} />);
+
+    await user.keyboard('{Control>}p{/Control}');
+    await user.click(screen.getByRole('option', { name: /Open Settings/ }));
+
+    expect(onOpenSettings).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('dialog', { name: 'Commands' })).not.toBeInTheDocument();
+  });
+
+  it('opens About from the command palette', async () => {
+    const user = userEvent.setup();
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
+
+    await user.keyboard('{Control>}p{/Control}');
+    await user.click(screen.getByRole('option', { name: /About/ }));
+
+    expect(screen.getByText(/clean, customizable new tab page/)).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Commands' })).not.toBeInTheDocument();
+  });
+
   it('restores the search hotkey after the command palette closes', async () => {
     const user = userEvent.setup();
     render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
