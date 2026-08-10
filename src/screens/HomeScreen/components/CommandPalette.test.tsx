@@ -1,0 +1,239 @@
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type { AppConfig } from '../../../types/config.ts';
+import { mockConfig, mockHiddenModule } from '../../../test/fixtures.ts';
+import { CommandPalette } from './CommandPalette.tsx';
+
+function renderPalette(
+  config: AppConfig = mockConfig,
+  onSave = vi.fn(),
+  onClose = vi.fn(),
+) {
+  render(<CommandPalette config={config} onSave={onSave} onClose={onClose} />);
+  return { onSave, onClose };
+}
+
+async function openAddLinkForm(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('option', { name: /Add Link/ }));
+}
+
+describe('CommandPalette', () => {
+  it('autofocuses and filters the declarative command list', async () => {
+    const user = userEvent.setup();
+    renderPalette();
+
+    const input = screen.getByPlaceholderText('Type a command...');
+    expect(input).toHaveFocus();
+
+    await user.type(input, 'bookmark');
+    expect(screen.getByRole('option', { name: /Add Link/ })).toBeInTheDocument();
+
+    await user.clear(input);
+    await user.type(input, 'unknown');
+    expect(screen.getByText('No commands found.')).toBeInTheDocument();
+  });
+
+  it('opens the selected command with Enter', async () => {
+    const user = userEvent.setup();
+    renderPalette();
+
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(screen.getByRole('heading', { name: 'Add Link' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Link URL')).toHaveFocus();
+  });
+
+  it('closes on Escape and backdrop click', async () => {
+    const user = userEvent.setup();
+    const { onClose } = renderPalette();
+
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledOnce();
+
+    const overlay = screen.getByRole('dialog').parentElement!;
+    await user.click(overlay);
+    expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not close when dialog content is clicked', async () => {
+    const user = userEvent.setup();
+    const { onClose } = renderPalette();
+
+    await user.click(screen.getByRole('heading', { name: 'Commands' }));
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('shows validation errors for every required add-link field', async () => {
+    const user = userEvent.setup();
+    const { onSave, onClose } = renderPalette();
+    await openAddLinkForm(user);
+
+    await user.click(screen.getByRole('button', { name: 'Add Link' }));
+
+    expect(screen.getByText('URL is required')).toBeInTheDocument();
+    expect(screen.getByText('Label is required')).toBeInTheDocument();
+    expect(screen.getByText('Category is required')).toBeInTheDocument();
+    expect(onSave).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('appends a normalized link to the selected category without mutating the input config', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    const originalLinkCount = mockConfig.modules[0].links.length;
+    renderPalette(mockConfig, onSave);
+    await openAddLinkForm(user);
+
+    await user.type(screen.getByLabelText('Link URL'), '  github.example/path  ');
+    await user.type(screen.getByLabelText('Link label'), '  Work GitHub  ');
+    const categoryInput = screen.getByLabelText('Folder / category');
+    await user.click(categoryInput);
+    await user.click(screen.getByRole('option', { name: 'Favorites' }));
+    await user.click(screen.getByRole('button', { name: 'Add Link' }));
+
+    expect(onSave).toHaveBeenCalledOnce();
+    const saved = onSave.mock.calls[0][0] as AppConfig;
+    expect(saved.modules[0].links).toHaveLength(originalLinkCount + 1);
+    expect(saved.modules[0].links.at(-1)).toEqual({
+      url: 'https://github.example/path',
+      label: 'Work GitHub',
+    });
+    expect(saved.modules[1]).toBe(mockConfig.modules[1]);
+    expect(mockConfig.modules[0].links).toHaveLength(originalLinkCount);
+  });
+
+  it('includes hidden categories and marks them as hidden', async () => {
+    const user = userEvent.setup();
+    const config = { ...mockConfig, modules: [...mockConfig.modules, mockHiddenModule] };
+    renderPalette(config);
+    await openAddLinkForm(user);
+
+    await user.click(screen.getByLabelText('Folder / category'));
+    const option = screen.getByRole('option', { name: /Hidden Section.*Hidden/ });
+    expect(within(option).getByText('Hidden')).toBeInTheDocument();
+  });
+
+  it('creates a visible category at the beginning when no category matches', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    const emptyConfig = { ...mockConfig, modules: [] };
+    renderPalette(emptyConfig, onSave);
+    await openAddLinkForm(user);
+
+    await user.type(screen.getByLabelText('Link URL'), 'example.com');
+    await user.type(screen.getByLabelText('Link label'), 'Example');
+    await user.type(screen.getByLabelText('Folder / category'), 'New Category');
+    await user.click(screen.getByRole('option', { name: /Create new category.*New Category/ }));
+    await user.click(screen.getByRole('button', { name: 'Add Link' }));
+
+    const saved = onSave.mock.calls[0][0] as AppConfig;
+    expect(saved.modules).toEqual([
+      {
+        type: 'links',
+        title: 'New Category',
+        links: [{ url: 'https://example.com', label: 'Example' }],
+      },
+    ]);
+    expect(saved.modules[0].hidden).toBeUndefined();
+  });
+
+  it('shows the top three matching categories followed by an explicit create option', async () => {
+    const user = userEvent.setup();
+    const config: AppConfig = {
+      ...mockConfig,
+      modules: ['Work', 'Workshop', 'Homework', 'Wow', 'Personal'].map((title) => ({
+        type: 'links',
+        title,
+        links: [],
+      })),
+    };
+    renderPalette(config);
+    await openAddLinkForm(user);
+
+    await user.type(screen.getByLabelText('Folder / category'), 'wo');
+    const options = screen.getAllByRole('option');
+
+    expect(options).toHaveLength(4);
+    expect(options.slice(0, 3).map((option) => option.textContent)).toEqual([
+      'Work',
+      'Workshop',
+      'Wow',
+    ]);
+    expect(options[3]).toHaveTextContent('Create new category “wo”');
+    expect(screen.queryByRole('option', { name: 'Homework' })).not.toBeInTheDocument();
+  });
+
+  it('requires choosing the create option for an unmatched category', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    renderPalette(mockConfig, onSave);
+    await openAddLinkForm(user);
+
+    await user.type(screen.getByLabelText('Link URL'), 'example.com');
+    await user.type(screen.getByLabelText('Link label'), 'Example');
+    await user.type(screen.getByLabelText('Folder / category'), 'New Category');
+    await user.click(screen.getByRole('button', { name: 'Add Link' }));
+
+    expect(screen.getByText('Choose a category or select the create option')).toBeInTheDocument();
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('reuses an exact category name instead of creating a duplicate', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    renderPalette(mockConfig, onSave);
+    await openAddLinkForm(user);
+
+    await user.type(screen.getByLabelText('Link URL'), 'example.com');
+    await user.type(screen.getByLabelText('Link label'), 'Example');
+    await user.type(screen.getByLabelText('Folder / category'), 'favorites');
+    await user.click(screen.getByRole('button', { name: 'Add Link' }));
+
+    const saved = onSave.mock.calls[0][0] as AppConfig;
+    expect(saved.modules).toHaveLength(mockConfig.modules.length);
+    expect(saved.modules[0].links.at(-1)?.label).toBe('Example');
+  });
+
+  it('supports keyboard selection in the category combobox', async () => {
+    const user = userEvent.setup();
+    renderPalette();
+    await openAddLinkForm(user);
+
+    const categoryInput = screen.getByLabelText('Folder / category');
+    await user.click(categoryInput);
+    expect(screen.getByRole('option', { name: 'Favorites' })).toHaveClass('selected');
+    await user.keyboard('{Enter}');
+    expect(categoryInput).toHaveValue('Favorites');
+    expect(categoryInput).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('automatically activates the create option when no categories match', async () => {
+    const user = userEvent.setup();
+    renderPalette();
+    await openAddLinkForm(user);
+
+    const categoryInput = screen.getByLabelText('Folder / category');
+    await user.type(categoryInput, 'Brand New');
+    const createOption = screen.getByRole('option', { name: /Create new category.*Brand New/ });
+
+    expect(createOption).toHaveClass('selected');
+    expect(categoryInput).toHaveAttribute('aria-activedescendant', createOption.id);
+
+    await user.keyboard('{Enter}');
+    expect(categoryInput).toHaveValue('Brand New');
+    expect(categoryInput).toHaveAttribute('aria-expanded', 'false');
+    expect(createOption).not.toBeInTheDocument();
+  });
+
+  it('traps focus within the dialog', () => {
+    renderPalette();
+
+    const close = screen.getByRole('button', { name: 'Close commands' });
+    const option = screen.getByRole('option', { name: /Add Link/ });
+    close.focus();
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab', shiftKey: true });
+    expect(option).toHaveFocus();
+
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab' });
+    expect(close).toHaveFocus();
+  });
+});

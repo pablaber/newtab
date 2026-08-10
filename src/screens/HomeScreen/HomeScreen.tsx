@@ -1,18 +1,29 @@
 import { useState, useCallback, useMemo } from 'react';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import type { AppConfig } from '../../types/config.ts';
 import { isHosted } from '../../env.ts';
 import { SearchBar } from './components/SearchBar.tsx';
 import { ModuleGrid } from './components/ModuleGrid.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
+import { CommandPalette } from './components/CommandPalette.tsx';
 
 interface HomeScreenProps {
   config: AppConfig;
+  onSaveConfig: (config: AppConfig) => void;
   onOpenSettings: () => void;
 }
 
-export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
+export function HomeScreen({ config, onSaveConfig, onOpenSettings }: HomeScreenProps) {
   const [navigating, setNavigating] = useState<{ url: string; label: string } | null>(null);
   const [showAbout, setShowAbout] = useState(false);
+  const [showCommands, setShowCommands] = useState(false);
+
+  const openCommands = useCallback(() => {
+    setShowAbout(false);
+    setShowCommands(true);
+  }, []);
+
+  useHotkey('Mod+P', openCommands, { preventDefault: true });
 
   const handleNavigate = useCallback((url: string, label: string) => {
     setNavigating({ url, label });
@@ -62,6 +73,7 @@ export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
       <div className="content">
         <SearchBar
           enabled={config.search?.enabled ?? false}
+          hotkeyEnabled={!showCommands && !showAbout}
           placeholder={config.search?.placeholder ?? 'Filter links...'}
           modules={config.modules}
           onNavigate={handleNavigate}
@@ -91,6 +103,13 @@ export function HomeScreen({ config, onOpenSettings }: HomeScreenProps) {
         </footer>
       )}
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
+      {showCommands && (
+        <CommandPalette
+          config={config}
+          onSave={onSaveConfig}
+          onClose={() => setShowCommands(false)}
+        />
+      )}
     </>
   );
 }

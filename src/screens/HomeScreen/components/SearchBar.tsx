@@ -11,6 +11,7 @@ function isMac(): boolean {
 
 interface SearchBarProps {
   enabled: boolean;
+  hotkeyEnabled?: boolean;
   placeholder: string;
   modules: ModuleConfig[];
   onNavigate: (url: string, label: string) => void;
@@ -30,7 +31,13 @@ function getFaviconUrl(url: string): string {
   }
 }
 
-export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchBarProps) {
+export function SearchBar({
+  enabled,
+  hotkeyEnabled = true,
+  placeholder,
+  modules,
+  onNavigate,
+}: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
@@ -39,7 +46,7 @@ export function SearchBar({ enabled, placeholder, modules, onNavigate }: SearchB
 
   useHotkey('Mod+K', () => {
     inputRef.current?.focus();
-  }, { preventDefault: true });
+  }, { enabled: enabled && hotkeyEnabled, preventDefault: true });
 
   const matches: MatchedLink[] = useMemo(() => {
     if (!query) return [];

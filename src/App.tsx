@@ -66,7 +66,11 @@ function App() {
   return (
     <>
       <BackgroundLayer background={config.background} />
-      <HomeScreen config={config} onOpenSettings={() => setShowConfig(true)} />
+      <HomeScreen
+        config={config}
+        onSaveConfig={setConfig}
+        onOpenSettings={() => setShowConfig(true)}
+      />
     </>
   );
 }
