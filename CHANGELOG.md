@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.0](https://github.com/pablaber/newtab/compare/v0.10.0...v0.11.0) (2026-08-10)
+
+
+### Features
+
+* add reliable foreground contrast controls for images and gradients ([#60](https://github.com/pablaber/newtab/issues/60)) ([ba47b06](https://github.com/pablaber/newtab/commit/ba47b06dd3c3098ba468e7922fa5af4bba1b8c05))
+* expand command palette actions ([#58](https://github.com/pablaber/newtab/issues/58)) ([5d6b2e2](https://github.com/pablaber/newtab/commit/5d6b2e21b15fe848052a058c5688efeb7fc96cba))
+
 ## [0.10.0](https://github.com/pablaber/newtab/compare/v0.9.0...v0.10.0) (2026-08-10)
 
 
