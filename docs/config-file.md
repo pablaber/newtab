@@ -1,9 +1,10 @@
 # Configuration
 
-Configuration is stored in the browser's localStorage. On first load (when no localStorage data exists), the app fetches `config.json` to seed the initial config. All subsequent changes are saved to localStorage and the seed file is not read again. The settings page has two tabs:
+Configuration is stored in the browser's localStorage. On first load (when no localStorage data exists), the app fetches `config.json` to seed the initial config. All subsequent changes are saved to localStorage and the seed file is not read again. The settings page includes:
 
-- **Background** — configure background image, overlay color, opacity, and gradient
+- **General** — configure background image, overlay color, opacity, gradient, and search
 - **Links** — add, remove, rename, and reorder sections and links
+- **Subcommands** — create scoped shortcuts with predefined links and freeform URL fields
 
 You can also import/export the full config as a base64 string from the settings header.
 
@@ -15,6 +16,7 @@ You can also import/export the full config as a base64 string from the settings 
 | `background` | `object` | Background settings (optional) |
 | `search` | `object` | Search bar settings (optional) |
 | `modules` | `array` | Array of module configurations |
+| `subcommands` | `array` | Scoped launcher commands (optional) |
 
 ## `background`
 
@@ -48,6 +50,8 @@ Optional. If missing or `enabled: false`, no search bar is shown.
 
 The search bar filters links across all modules by label (case-insensitive substring match). Pressing **Escape** clears the filter. Pressing **Enter** when exactly one link matches navigates to that link.
 
+When `search.enabled` is `false` but subcommands are configured, the launcher remains visible for subcommands and does not show ordinary link results.
+
 ## `modules[]`
 
 Each module represents a section of links on the page.
@@ -66,6 +70,49 @@ Each module represents a section of links on the page.
 | `url` | `string` | — | Link URL |
 | `label` | `string` | — | Display text |
 | `icon` | `string` | auto-fetched favicon | URL to an icon image. If omitted, a favicon is fetched from Google's favicon service. |
+
+## `subcommands[]`
+
+Subcommands are one-level scopes in the launcher. Their items do not appear in homepage modules or ordinary link searches.
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | Display name used in launcher suggestions |
+| `trigger` | `string` | Unique, case-insensitive shortcut of up to 20 letters, numbers, `_`, or `-` |
+| `items` | `array` | Predefined destinations; may be empty when `freeform` is present |
+| `freeform` | `object` | Optional ordered argument fields and URL template |
+
+Each predefined item has a required `label` and HTTP(S) `url`, plus an optional imported `icon`. A subcommand must have at least one predefined item or a valid freeform definition.
+
+Freeform fields are required positional values. Field names are unique, up to 30 letters, numbers, `_`, or `-`, and each field must appear in the template as a `{field}` placeholder. Templates may not reference unknown fields and must resolve to an HTTP(S) URL. Complete values are URL-encoded during interpolation, so spaces and `/` characters remain inside one argument.
+
+To run a subcommand, type its trigger and press **Tab**, or activate its suggestion with **Enter** or a click. Within the scope:
+
+- **Enter** opens the selected predefined item.
+- A live **Open generated destination** option appears after predefined matches when the current value completes the freeform URL. Select it, or press **Enter** when it is the only result, to open it without committing with Tab first.
+- **Tab** commits the current value to the next freeform field.
+- **Shift+Tab** returns to the previous field and selects its value.
+- **Backspace** on an empty field returns to the previous field.
+- **Escape** clears field text, or exits the scope when the field is empty.
+
+Example with both kinds of destination:
+
+```json
+{
+  "name": "GitHub Project",
+  "trigger": "ghp",
+  "items": [
+    {
+      "label": "newtab",
+      "url": "https://github.com/pablaber/newtab"
+    }
+  ],
+  "freeform": {
+    "fields": [{ "name": "repo" }],
+    "urlTemplate": "https://github.com/pablaber/{repo}"
+  }
+}
+```
 
 ## Example
 

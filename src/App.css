@@ -131,15 +131,35 @@
   max-width: 600px;
 }
 
-.search-bar {
+.search-bar-shell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
-  padding: 14px 20px;
-  font-size: 1.1rem;
-  font-family: inherit;
-  color: rgb(var(--fg));
+  min-height: 52px;
+  padding: 5px 8px;
   background: rgba(var(--fg), 0.08);
   border: 1px solid rgba(var(--fg), 0.1);
   border-radius: 12px;
+  transition: background 150ms, border-color 150ms;
+}
+
+.search-bar-shell.focused {
+  background: rgba(var(--fg), 0.12);
+  border-color: rgba(var(--fg), 0.2);
+}
+
+.search-bar {
+  flex: 1;
+  min-width: 80px;
+  width: auto;
+  padding: 8px 11px;
+  font-size: 1.1rem;
+  font-family: inherit;
+  color: rgb(var(--fg));
+  background: transparent;
+  border: none;
+  border-radius: 8px;
   outline: none;
   transition: background 150ms, border-color 150ms;
 }
@@ -149,8 +169,7 @@
 }
 
 .search-bar:focus {
-  background: rgba(var(--fg), 0.12);
-  border-color: rgba(var(--fg), 0.2);
+  background: transparent;
 }
 
 .search-bar--has-kbd {
@@ -179,6 +198,60 @@
 
 .search-bar-kbd--hidden {
   opacity: 0;
+}
+
+.search-scope-chip,
+.search-argument-chip {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 6px;
+  padding: 6px 9px;
+  color: rgba(var(--fg), 0.82);
+  background: rgba(var(--fg), 0.12);
+  border: 1px solid rgba(var(--fg), 0.12);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.78rem;
+}
+
+.search-scope-chip {
+  cursor: pointer;
+}
+
+.search-scope-chip:hover {
+  background: rgba(var(--fg), 0.18);
+}
+
+.search-argument-chip {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-argument-chip small {
+  color: rgba(var(--fg), 0.44);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.search-scope-syntax {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 0;
+  color: rgba(var(--fg), 0.42);
+  font-size: 0.72rem;
+}
+
+.search-scope-syntax code {
+  color: rgba(var(--fg), 0.68);
+  font-family: inherit;
+}
+
+.search-scope-syntax span:last-child {
+  margin-left: auto;
 }
 
 /* Search Dropdown */
@@ -240,6 +313,33 @@
   opacity: 0.4;
   flex-shrink: 0;
   margin-left: 12px;
+}
+
+.search-subcommand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  color: rgba(var(--fg), 0.65);
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(var(--fg), 0.1);
+  border-radius: 4px;
+}
+
+.search-generated-item {
+  gap: 14px;
+}
+
+.search-generated-url {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(var(--fg), 0.46);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Module Grid */
@@ -1168,6 +1268,68 @@
   font-size: 0.95rem;
 }
 
+/* Subcommands Tab */
+.config-editor-tab-toolbar,
+.subcommand-editor-group-header,
+.subcommand-heading-fields,
+.subcommand-field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.config-editor-tab-toolbar {
+  margin-bottom: 16px;
+}
+
+.subcommand-heading-fields {
+  flex: 1;
+  min-width: 0;
+}
+
+.subcommand-heading-fields .config-editor-input:first-child {
+  flex: 1;
+}
+
+.subcommand-trigger-input {
+  width: 120px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.subcommand-editor-card .config-editor-field-error {
+  margin: 4px 0;
+}
+
+.subcommand-editor-group {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(var(--fg), 0.08);
+}
+
+.subcommand-editor-group-header {
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.subcommand-editor-group-header h3 {
+  margin: 0;
+  color: rgba(var(--fg), 0.62);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.subcommand-freeform-editor {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.subcommand-field-row .config-editor-link-fields {
+  flex: 1;
+}
+
 /* Hosted Footer */
 .hosted-footer {
   display: flex;
@@ -1610,6 +1772,19 @@
   .config-editor-tab {
     flex: 1;
     padding-inline: 8px;
+  }
+
+  .config-editor-tabs {
+    overflow-x: auto;
+  }
+
+  .subcommand-heading-fields {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .subcommand-trigger-input {
+    width: 100%;
   }
 
   .sync-conflict-option {

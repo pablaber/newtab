@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { HotkeysProvider } from '@tanstack/react-hotkeys';
 import { SearchBar } from './SearchBar.tsx';
 import { scoreMatch, scoreLinkMatch } from './searchScoring.ts';
-import { mockModule, mockModuleWithHiddenLinks } from '../../../test/fixtures.ts';
+import { mockModule, mockModuleWithHiddenLinks, mockSubcommands } from '../../../test/fixtures.ts';
 import type { ModuleConfig } from '../../../types/config.ts';
 
 function renderWithHotkeys(ui: React.ReactElement) {
@@ -92,6 +92,16 @@ describe('SearchBar', () => {
       <SearchBar enabled={false} placeholder="Filter..." modules={modules} onNavigate={vi.fn()} />,
     );
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('still renders subcommands when ordinary link search is disabled', async () => {
+    const user = userEvent.setup();
+    render(<SearchBar enabled={false} placeholder="Filter..." modules={modules} subcommands={mockSubcommands} onNavigate={vi.fn()} />);
+
+    const input = screen.getByPlaceholderText('Run a subcommand...');
+    await user.type(input, 'ghp');
+    expect(screen.getByText('GitHub Project')).toBeInTheDocument();
+    expect(screen.queryByText('GitHub')).not.toBeInTheDocument();
   });
 
   it('shows dropdown matches when typing a query', async () => {
@@ -319,5 +329,139 @@ describe('SearchBar', () => {
     // In jsdom (Linux), Mod resolves to Control; fire Ctrl+K
     await user.keyboard('{Control>}k{/Control}');
     expect(document.activeElement).toBe(input);
+  });
+
+  it('activates an exact trigger with Tab and shows scoped items', async () => {
+    const user = userEvent.setup();
+    render(<SearchBar enabled placeholder="Filter..." modules={modules} subcommands={mockSubcommands} onNavigate={vi.fn()} />);
+
+    await user.type(screen.getByPlaceholderText('Filter...'), 'ghp');
+    await user.keyboard('{Tab}');
+
+    expect(screen.getByRole('button', { name: 'Exit GitHub Project subcommand' })).toBeInTheDocument();
+    expect(screen.getByText('newtab')).toBeInTheDocument();
+    expect(screen.getByText('<repo>')).toBeInTheDocument();
+  });
+
+  it('activates a suggested subcommand with Enter or click', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<SearchBar enabled placeholder="Filter..." modules={[]} subcommands={mockSubcommands} onNavigate={vi.fn()} />);
+
+    await user.type(screen.getByPlaceholderText('Filter...'), 'GitHub Project');
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('button', { name: 'Exit GitHub Project subcommand' })).toBeInTheDocument();
+
+    rerender(<SearchBar enabled placeholder="Filter..." modules={[]} subcommands={mockSubcommands} onNavigate={vi.fn()} />);
+    await user.click(screen.getByRole('button', { name: 'Exit GitHub Project subcommand' }));
+    await user.type(screen.getByPlaceholderText('Filter...'), 'gh');
+    await user.click(screen.getByText('GitHub Project'));
+    expect(screen.getByRole('button', { name: 'Exit GitHub Project subcommand' })).toBeInTheDocument();
+  });
+
+  it('gives predefined items Enter priority while Tab chooses freeform', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    render(<SearchBar enabled placeholder="Filter..." modules={[]} subcommands={mockSubcommands} onNavigate={onNavigate} />);
+
+    const input = screen.getByPlaceholderText('Filter...');
+    await user.type(input, 'ghp');
+    await user.keyboard('{Tab}');
+    await user.type(screen.getByPlaceholderText('<repo>'), 'newtab');
+    await user.keyboard('{Enter}');
+    expect(onNavigate).toHaveBeenCalledWith('https://github.com/pablaber/newtab', 'newtab');
+
+    onNavigate.mockClear();
+    await user.keyboard('{Tab}');
+    expect(screen.getByText('Open generated destination')).toBeInTheDocument();
+    expect(screen.getByText('https://github.com/pablaber/newtab')).toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(onNavigate).toHaveBeenCalledWith('https://github.com/pablaber/newtab', 'GitHub Project');
+  });
+
+  it('shows a live freeform destination below predefined items', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    render(<SearchBar enabled placeholder="Filter..." modules={[]} subcommands={mockSubcommands} onNavigate={onNavigate} />);
+
+    await user.type(screen.getByPlaceholderText('Filter...'), 'ghp');
+    await user.keyboard('{Tab}');
+    await user.type(screen.getByPlaceholderText('<repo>'), 'new');
+
+    const results = screen.getAllByRole('link');
+    expect(results[0]).toHaveTextContent('newtab');
+    expect(results[1]).toHaveTextContent('Open generated destination');
+    expect(results[1]).toHaveTextContent('https://github.com/pablaber/new');
+
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onNavigate).toHaveBeenCalledWith('https://github.com/pablaber/new', 'GitHub Project');
+  });
+
+  it('opens the only live freeform destination with Enter without requiring Tab', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    render(<SearchBar enabled placeholder="Filter..." modules={[]} subcommands={mockSubcommands} onNavigate={onNavigate} />);
+
+    await user.type(screen.getByPlaceholderText('Filter...'), 'ghp');
+    await user.keyboard('{Tab}');
+    await user.type(screen.getByPlaceholderText('<repo>'), 'brand new');
+
+    expect(screen.getByRole('link')).toHaveTextContent('Open generated destination');
+    expect(screen.getByRole('link')).toHaveTextContent('https://github.com/pablaber/brand%20new');
+    await user.keyboard('{Enter}');
+    expect(onNavigate).toHaveBeenCalledWith(
+      'https://github.com/pablaber/brand%20new',
+      'GitHub Project',
+    );
+  });
+
+  it('commits multi-field values with spaces and URL-encodes spaces and slashes', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    render(<SearchBar enabled placeholder="Filter..." modules={[]} subcommands={mockSubcommands} onNavigate={onNavigate} />);
+
+    await user.type(screen.getByPlaceholderText('Filter...'), 'gh');
+    await user.keyboard('{Tab}');
+    await user.type(screen.getByPlaceholderText('<account>'), 'Patrick Bacon');
+    await user.keyboard('{Tab}');
+    expect(screen.getByText('Patrick Bacon')).toBeInTheDocument();
+    await user.type(screen.getByPlaceholderText('<repo>'), 'tools/new tab');
+    await user.keyboard('{Tab}');
+
+    expect(screen.getByText('https://github.com/Patrick%20Bacon/tools%2Fnew%20tab')).toBeInTheDocument();
+    await user.keyboard('{Enter}');
+    expect(onNavigate).toHaveBeenCalledWith(
+      'https://github.com/Patrick%20Bacon/tools%2Fnew%20tab',
+      'GitHub',
+    );
+  });
+
+  it('supports Backspace, Shift+Tab, Escape, and removing the scope chip', async () => {
+    const user = userEvent.setup();
+    render(<SearchBar enabled placeholder="Filter..." modules={[]} subcommands={mockSubcommands} onNavigate={vi.fn()} />);
+
+    await user.type(screen.getByPlaceholderText('Filter...'), 'gh');
+    await user.keyboard('{Tab}');
+    const accountInput = screen.getByPlaceholderText('<account>');
+    await user.type(accountInput, 'pablaber');
+    await user.keyboard('{Tab}');
+    await user.keyboard('{Backspace}');
+    expect(accountInput).toHaveValue('pablaber');
+
+    await user.keyboard('{Tab}');
+    await user.type(screen.getByPlaceholderText('<repo>'), 'draft');
+    await user.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(accountInput).toHaveValue('pablaber');
+    expect(accountInput.selectionStart).toBe(0);
+    expect(accountInput.selectionEnd).toBe('pablaber'.length);
+
+    await user.keyboard('{Escape}');
+    expect(accountInput).toHaveValue('');
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('button', { name: 'Exit GitHub subcommand' })).not.toBeInTheDocument();
+
+    await user.type(screen.getByPlaceholderText('Filter...'), 'gh');
+    await user.keyboard('{Tab}');
+    await user.click(screen.getByRole('button', { name: 'Exit GitHub subcommand' }));
+    expect(screen.getByPlaceholderText('Filter...')).toHaveValue('');
   });
 });

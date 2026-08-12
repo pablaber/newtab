@@ -12,6 +12,7 @@ interface HomeScreenProps {
   config: AppConfig;
   onSaveConfig: (config: AppConfig) => void;
   onOpenSettings: () => void;
+  onOpenSubcommands?: () => void;
   account?: AccountState;
   syncStatus?: SyncStatus;
   onOpenAccount?: () => void;
@@ -22,6 +23,7 @@ export function HomeScreen({
   config,
   onSaveConfig,
   onOpenSettings,
+  onOpenSubcommands,
   account,
   syncStatus = 'local',
   onOpenAccount,
@@ -107,6 +109,7 @@ export function HomeScreen({
           hotkeyEnabled={!showCommands && !showAbout}
           placeholder={config.search?.placeholder ?? 'Filter links...'}
           modules={config.modules}
+          subcommands={config.subcommands}
           onNavigate={handleNavigate}
         />
         {hasVisibleModules ? (
@@ -140,6 +143,7 @@ export function HomeScreen({
           onSave={onSaveConfig}
           onClose={() => setShowCommands(false)}
           onOpenSettings={onOpenSettings}
+          onOpenSubcommands={onOpenSubcommands}
           onOpenAbout={() => setShowAbout(true)}
           account={account}
           onOpenAccount={onOpenAccount}

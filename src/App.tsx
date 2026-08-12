@@ -28,6 +28,7 @@ function App() {
   } = useConfig();
   const [showConfig, setShowConfig] = useState(false);
   const [configTab, setConfigTab] = useState<ConfigEditorTab>('general');
+  const [stageNewSubcommand, setStageNewSubcommand] = useState(false);
   const [previewBackground, setPreviewBackground] = useState<BackgroundConfig | null>(null);
 
   const effectiveBackground: BackgroundConfig | undefined =
@@ -48,14 +49,16 @@ function App() {
     setEditorOpen(showConfig);
   }, [setEditorOpen, showConfig]);
 
-  const openSettings = (tab: ConfigEditorTab = 'general') => {
+  const openSettings = (tab: ConfigEditorTab = 'general', stageSubcommand = false) => {
     setConfigTab(tab);
+    setStageNewSubcommand(stageSubcommand);
     setShowConfig(true);
   };
 
   const closeSettings = () => {
     setShowConfig(false);
     setPreviewBackground(null);
+    setStageNewSubcommand(false);
   };
 
   if (loading) {
@@ -79,6 +82,7 @@ function App() {
           onClose={closeSettings}
           onPreview={(bg) => setPreviewBackground(bg ?? null)}
           initialTab={configTab}
+          stageNewSubcommand={stageNewSubcommand}
           accountControls={account.status === 'disabled' ? undefined : {
             account,
             syncStatus,
@@ -107,6 +111,7 @@ function App() {
         config={config}
         onSaveConfig={setConfig}
         onOpenSettings={() => openSettings('general')}
+        onOpenSubcommands={() => openSettings('subcommands', true)}
         account={account}
         syncStatus={syncStatus}
         onOpenAccount={account.status === 'disabled' ? undefined : () => openSettings('account')}
