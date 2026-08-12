@@ -1,11 +1,12 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useHotkey } from '@tanstack/react-hotkeys';
 import type { AccountState } from '../../../hooks/useConfig.ts';
-import type { AppConfig, ModuleConfig } from '../../../types/config.ts';
+import type { AppConfig, LinkConfig, ModuleConfig } from '../../../types/config.ts';
 import { ensureProtocol, MAX_LINK_LABEL, MAX_SECTION_NAME } from '../../../utils/linkConfig.ts';
+import { scoreLinkMatch } from './searchScoring.ts';
 
-type CommandId = 'add-link' | 'add-subcommand' | 'open-settings' | 'account' | 'sign-in' | 'sign-out' | 'about';
-type PaletteView = 'commands' | 'add-link';
+type CommandId = 'add-link' | 'remove-links' | 'add-subcommand' | 'open-settings' | 'account' | 'sign-in' | 'sign-out' | 'about';
+type PaletteView = 'commands' | 'add-link' | 'remove-links';
 
 interface CommandDefinition {
   id: CommandId;
@@ -20,6 +21,12 @@ const BASE_COMMANDS = [
     label: 'Add Link',
     description: 'Create a link in a category',
     keywords: ['bookmark', 'url', 'folder', 'category'],
+  },
+  {
+    id: 'remove-links',
+    label: 'Remove Links',
+    description: 'Find and remove an existing link',
+    keywords: ['delete', 'bookmark', 'url', 'category'],
   },
   {
     id: 'open-settings',
@@ -78,6 +85,10 @@ interface AddLinkFormProps extends Pick<CommandPaletteProps, 'config' | 'onSave'
   onBack: () => void;
 }
 
+interface RemoveLinksProps extends Pick<CommandPaletteProps, 'config' | 'onSave' | 'onClose'> {
+  onBack: () => void;
+}
+
 interface FormErrors {
   url?: string;
   label?: string;
@@ -93,6 +104,7 @@ type CategoryOption =
   | { type: 'create'; id: string; title: string };
 
 const MAX_CATEGORY_RESULTS = 3;
+const MAX_REMOVE_RESULTS = 5;
 
 function AddLinkForm({ config, onSave, onClose, onBack }: AddLinkFormProps) {
   const [url, setUrl] = useState('');
@@ -340,6 +352,166 @@ function AddLinkForm({ config, onSave, onClose, onBack }: AddLinkFormProps) {
   );
 }
 
+interface RemoveLinkMatch {
+  link: LinkConfig;
+  moduleIndex: number;
+  linkIndex: number;
+  moduleTitle: string;
+  score: number;
+}
+
+function faviconUrl(link: LinkConfig): string {
+  if (link.icon) return link.icon;
+
+  try {
+    return `https://www.google.com/s2/favicons?domain=${new URL(link.url).hostname}&sz=32`;
+  } catch {
+    return '';
+  }
+}
+
+function RemoveLinks({ config, onSave, onClose, onBack }: RemoveLinksProps) {
+  const [query, setQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [pendingRemoval, setPendingRemoval] = useState<RemoveLinkMatch | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listId = useId();
+
+  useEffect(() => {
+    if (!pendingRemoval) inputRef.current?.focus();
+  }, [pendingRemoval]);
+
+  const matches = useMemo<RemoveLinkMatch[]>(() => {
+    if (!query.trim()) return [];
+
+    return config.modules
+      .flatMap((module, moduleIndex) => module.links.map((link, linkIndex) => ({
+        link,
+        moduleIndex,
+        linkIndex,
+        moduleTitle: module.title,
+        score: scoreLinkMatch(query, link.label, module.title, link.url),
+      })))
+      .filter(({ score }) => score > 0)
+      .sort((left, right) => right.score - left.score)
+      .slice(0, MAX_REMOVE_RESULTS);
+  }, [config.modules, query]);
+
+  const requestRemoval = (match: RemoveLinkMatch) => {
+    setPendingRemoval(match);
+  };
+
+  const removeLink = () => {
+    if (!pendingRemoval) return;
+
+    const modules = config.modules.map((module, moduleIndex) => (
+      moduleIndex === pendingRemoval.moduleIndex
+        ? {
+            ...module,
+            links: module.links.filter((_, linkIndex) => linkIndex !== pendingRemoval.linkIndex),
+          }
+        : module
+    ));
+    onSave({ ...config, modules });
+    onClose();
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setSelectedIndex((current) => Math.min(current + 1, Math.max(matches.length - 1, 0)));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setSelectedIndex((current) => Math.max(current - 1, 0));
+    } else if (event.key === 'Enter' && matches[selectedIndex]) {
+      event.preventDefault();
+      requestRemoval(matches[selectedIndex]);
+    }
+  };
+
+  if (pendingRemoval) {
+    return (
+      <div className="command-remove-confirmation">
+        <p>
+          Are you sure you want to remove <strong>{pendingRemoval.link.label}</strong>?
+        </p>
+        <span className="command-remove-context">
+          {pendingRemoval.moduleTitle} · {pendingRemoval.link.url}
+        </span>
+        <div className="command-form-actions">
+          <button type="button" className="command-danger-button" onClick={removeLink}>
+            Remove Link
+          </button>
+          <button
+            type="button"
+            className="command-secondary-button"
+            autoFocus
+            onClick={() => setPendingRemoval(null)}
+          >
+            Keep Link
+          </button>
+          <button type="button" className="command-text-button" onClick={onBack}>Back to commands</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="text"
+        className="command-search-input"
+        value={query}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setSelectedIndex(0);
+        }}
+        onKeyDown={handleKeyDown}
+        placeholder="Search links to remove..."
+        role="combobox"
+        aria-autocomplete="list"
+        aria-controls={listId}
+        aria-expanded="true"
+        aria-activedescendant={matches[selectedIndex]
+          ? `${listId}-${matches[selectedIndex].moduleIndex}-${matches[selectedIndex].linkIndex}`
+          : undefined}
+      />
+      <div id={listId} className="command-list" role="listbox">
+        {matches.map((match, index) => (
+          <button
+            id={`${listId}-${match.moduleIndex}-${match.linkIndex}`}
+            key={`${match.moduleIndex}-${match.linkIndex}`}
+            type="button"
+            className={`command-list-item${index === selectedIndex ? ' selected' : ''}`}
+            role="option"
+            aria-selected={index === selectedIndex}
+            onMouseEnter={() => setSelectedIndex(index)}
+            onClick={() => requestRemoval(match)}
+          >
+            <span className="command-list-icon" aria-hidden="true">
+              {faviconUrl(match.link) ? (
+                <img className="command-list-favicon" src={faviconUrl(match.link)} alt="" width={18} height={18} />
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+              )}
+            </span>
+            <span className="command-list-copy">
+              <span className="command-list-label">{match.link.label}</span>
+              <span className="command-list-description">{match.moduleTitle} · {match.link.url}</span>
+            </span>
+          </button>
+        ))}
+        {!query.trim() && <p className="command-empty">Type to search your links.</p>}
+        {query.trim() && matches.length === 0 && <p className="command-empty">No links found.</p>}
+      </div>
+    </>
+  );
+}
+
 function CommandIcon({ id }: { id: CommandId }) {
   if (id === 'open-settings') {
     return (
@@ -379,6 +551,17 @@ function CommandIcon({ id }: { id: CommandId }) {
     );
   }
 
+  if (id === 'remove-links') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="3 6 5 6 21 6" />
+        <path d="M19 6l-1 14H6L5 6m3 0V4h8v2" />
+        <line x1="10" y1="11" x2="10" y2="17" />
+        <line x1="14" y1="11" x2="14" y2="17" />
+      </svg>
+    );
+  }
+
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 5v14" />
@@ -410,11 +593,11 @@ export function CommandPalette({
     const availableCommands: CommandDefinition[] = [...BASE_COMMANDS];
     if (!account || account.status === 'disabled' || !onOpenAccount) return availableCommands;
 
-    availableCommands.splice(2, 0, ACCOUNT_COMMAND);
+    availableCommands.splice(3, 0, ACCOUNT_COMMAND);
     if (account.status === 'signed-in' && onSignOut) {
-      availableCommands.splice(3, 0, SIGN_OUT_COMMAND);
+      availableCommands.splice(4, 0, SIGN_OUT_COMMAND);
     } else if (account.status === 'signed-out') {
-      availableCommands.splice(3, 0, SIGN_IN_COMMAND);
+      availableCommands.splice(4, 0, SIGN_IN_COMMAND);
     }
     return availableCommands;
   }, [account, onOpenAccount, onSignOut]);
@@ -443,7 +626,7 @@ export function CommandPalette({
   }, [view]);
 
   const activateCommand = (command: CommandDefinition) => {
-    if (command.id === 'add-link') {
+    if (command.id === 'add-link' || command.id === 'remove-links') {
       setView(command.id);
       return;
     }
@@ -528,7 +711,7 @@ export function CommandPalette({
               </button>
             )}
             <h2 id={titleId} className="command-title">
-              {view === 'commands' ? 'Commands' : 'Add Link'}
+              {view === 'commands' ? 'Commands' : view === 'add-link' ? 'Add Link' : 'Remove Links'}
             </h2>
           </div>
           <button type="button" className="command-icon-button" aria-label="Close commands" onClick={onClose}>
@@ -586,8 +769,15 @@ export function CommandPalette({
               )}
             </div>
           </>
-        ) : (
+        ) : view === 'add-link' ? (
           <AddLinkForm
+            config={config}
+            onSave={onSave}
+            onClose={onClose}
+            onBack={() => setView('commands')}
+          />
+        ) : (
+          <RemoveLinks
             config={config}
             onSave={onSave}
             onClose={onClose}

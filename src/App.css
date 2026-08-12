@@ -1561,6 +1561,10 @@
   border-radius: 8px;
 }
 
+.command-list-favicon {
+  border-radius: 3px;
+}
+
 .command-list-copy {
   display: flex;
   flex-direction: column;
@@ -1576,6 +1580,9 @@
 .command-list-description {
   font-size: 0.78rem;
   color: rgba(var(--fg), 0.46);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .command-empty {
@@ -1688,6 +1695,7 @@
 }
 
 .command-primary-button,
+.command-danger-button,
 .command-secondary-button,
 .command-text-button {
   padding: 9px 15px;
@@ -1706,6 +1714,35 @@
 
 .command-primary-button:hover {
   background: rgb(var(--fg));
+}
+
+.command-danger-button {
+  color: rgba(var(--fg), 0.92);
+  background: rgba(210, 45, 45, 0.78);
+}
+
+.command-danger-button:hover {
+  background: rgba(225, 50, 50, 0.95);
+}
+
+.command-remove-confirmation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.command-remove-confirmation p {
+  margin: 0;
+  color: rgba(var(--fg), 0.82);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.command-remove-context {
+  margin-bottom: 8px;
+  color: rgba(var(--fg), 0.45);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
 }
 
 .command-secondary-button {
