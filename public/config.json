@@ -15,6 +15,44 @@
     "enabled": true,
     "placeholder": "Filter links..."
   },
+  "subcommands": [
+    {
+      "name": "GitHub Repository",
+      "trigger": "gh",
+      "items": [
+        { "label": "React", "url": "https://github.com/facebook/react" },
+        { "label": "TypeScript", "url": "https://github.com/microsoft/TypeScript" },
+        { "label": "Vite", "url": "https://github.com/vitejs/vite" }
+      ],
+      "freeform": {
+        "fields": [
+          { "name": "owner" },
+          { "name": "repo" }
+        ],
+        "urlTemplate": "https://github.com/{owner}/{repo}"
+      }
+    },
+    {
+      "name": "Developer Docs",
+      "trigger": "docs",
+      "items": [
+        { "label": "MDN Web Docs", "url": "https://developer.mozilla.org" },
+        { "label": "React Docs", "url": "https://react.dev" },
+        { "label": "TypeScript Docs", "url": "https://www.typescriptlang.org/docs/" }
+      ]
+    },
+    {
+      "name": "DuckDuckGo Search",
+      "trigger": "ddg",
+      "items": [],
+      "freeform": {
+        "fields": [
+          { "name": "query" }
+        ],
+        "urlTemplate": "https://duckduckgo.com/?q={query}"
+      }
+    }
+  ],
   "modules": [
     {
       "type": "links",

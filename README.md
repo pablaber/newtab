@@ -48,10 +48,11 @@ npm run test:watch    # run tests in watch mode
 
 ## Configuration
 
-All configuration is managed from the built-in settings page, which has two tabs:
+All configuration is managed from the built-in settings page:
 
-- **Background** — configure background image, overlay color, opacity, and gradient
+- **General** — configure background image, overlay color, opacity, gradient, and search
 - **Links** — add, remove, rename, and reorder sections and links
+- **Subcommands** — add scoped shortcuts with predefined links or freeform URL arguments
 
 Configuration is stored in the browser's localStorage. On first load, a default `config.json` seeds the initial config. You can also import/export the full config as a base64 string from the settings header.
 

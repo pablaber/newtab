@@ -14,6 +14,7 @@ function renderPalette(
   account?: AccountState,
   onOpenAccount = vi.fn(),
   onSignOut = vi.fn(),
+  onOpenSubcommands = vi.fn(),
 ) {
   render(
     <CommandPalette
@@ -21,13 +22,14 @@ function renderPalette(
       onSave={onSave}
       onClose={onClose}
       onOpenSettings={onOpenSettings}
+      onOpenSubcommands={onOpenSubcommands}
       onOpenAbout={onOpenAbout}
       account={account}
       onOpenAccount={onOpenAccount}
       onSignOut={onSignOut}
     />,
   );
-  return { onSave, onClose, onOpenSettings, onOpenAbout, onOpenAccount, onSignOut };
+  return { onSave, onClose, onOpenSettings, onOpenAbout, onOpenAccount, onSignOut, onOpenSubcommands };
 }
 
 async function openAddLinkForm(user: ReturnType<typeof userEvent.setup>) {
@@ -67,6 +69,16 @@ describe('CommandPalette', () => {
 
     expect(onClose).toHaveBeenCalledOnce();
     expect(onOpenSettings).toHaveBeenCalledOnce();
+  });
+
+  it('opens a staged Subcommands settings card', async () => {
+    const user = userEvent.setup();
+    const { onClose, onOpenSubcommands } = renderPalette();
+
+    await user.click(screen.getByRole('option', { name: /Add Subcommand/ }));
+
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(onOpenSubcommands).toHaveBeenCalledOnce();
   });
 
   it('opens About and closes the command palette', async () => {

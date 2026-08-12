@@ -4,7 +4,7 @@ import type { AccountState } from '../../../hooks/useConfig.ts';
 import type { AppConfig, ModuleConfig } from '../../../types/config.ts';
 import { ensureProtocol, MAX_LINK_LABEL, MAX_SECTION_NAME } from '../../../utils/linkConfig.ts';
 
-type CommandId = 'add-link' | 'open-settings' | 'account' | 'sign-in' | 'sign-out' | 'about';
+type CommandId = 'add-link' | 'add-subcommand' | 'open-settings' | 'account' | 'sign-in' | 'sign-out' | 'about';
 type PaletteView = 'commands' | 'add-link';
 
 interface CommandDefinition {
@@ -26,6 +26,12 @@ const BASE_COMMANDS = [
     label: 'Open Settings',
     description: 'Customize your new tab page',
     keywords: ['config', 'preferences', 'edit'],
+  },
+  {
+    id: 'add-subcommand',
+    label: 'Add Subcommand',
+    description: 'Create a scoped launcher command',
+    keywords: ['command', 'trigger', 'url', 'shortcut'],
   },
   {
     id: 'about',
@@ -61,6 +67,7 @@ interface CommandPaletteProps {
   onSave: (config: AppConfig) => void;
   onClose: () => void;
   onOpenSettings: () => void;
+  onOpenSubcommands?: () => void;
   onOpenAbout: () => void;
   account?: AccountState;
   onOpenAccount?: () => void;
@@ -385,6 +392,7 @@ export function CommandPalette({
   onSave,
   onClose,
   onOpenSettings,
+  onOpenSubcommands,
   onOpenAbout,
   account,
   onOpenAccount,
@@ -444,6 +452,9 @@ export function CommandPalette({
     switch (command.id) {
       case 'open-settings':
         onOpenSettings();
+        break;
+      case 'add-subcommand':
+        onOpenSubcommands?.();
         break;
       case 'account':
       case 'sign-in':

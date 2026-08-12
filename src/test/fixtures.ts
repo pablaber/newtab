@@ -1,4 +1,4 @@
-import type { AppConfig, ModuleConfig, LinkConfig, BackgroundConfig } from '../types/config.ts';
+import type { AppConfig, ModuleConfig, LinkConfig, BackgroundConfig, SubcommandConfig } from '../types/config.ts';
 
 export const mockLink: LinkConfig = {
   url: 'https://github.com',
@@ -80,3 +80,27 @@ export const mockConfigNoSearch: AppConfig = {
   version: 1,
   modules: [mockModule],
 };
+
+export const mockSubcommands: SubcommandConfig[] = [
+  {
+    name: 'GitHub Project',
+    trigger: 'ghp',
+    items: [
+      { label: 'newtab', url: 'https://github.com/pablaber/newtab' },
+      { label: 'website', url: 'https://github.com/pablaber/website' },
+    ],
+    freeform: {
+      fields: [{ name: 'repo' }],
+      urlTemplate: 'https://github.com/pablaber/{repo}',
+    },
+  },
+  {
+    name: 'GitHub',
+    trigger: 'gh',
+    items: [],
+    freeform: {
+      fields: [{ name: 'account' }, { name: 'repo' }],
+      urlTemplate: 'https://github.com/{account}/{repo}',
+    },
+  },
+];

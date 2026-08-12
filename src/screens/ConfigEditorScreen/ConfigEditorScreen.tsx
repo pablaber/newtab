@@ -3,6 +3,7 @@ import type { AppConfig, BackgroundConfig } from '../../types/config.ts';
 import { validateConfig } from '../../utils/configValidation.ts';
 import { GeneralTab } from './components/GeneralTab.tsx';
 import { LinksTab } from './components/LinksTab.tsx';
+import { SubcommandsTab } from './components/SubcommandsTab.tsx';
 import { AccountTab, type AccountTabProps } from './components/AccountTab.tsx';
 
 function toBase64(str: string): string {
@@ -18,7 +19,7 @@ function fromBase64(b64: string): string {
 }
 
 type ImportExportPanel = 'none' | 'export' | 'import';
-export type ConfigEditorTab = 'general' | 'links' | 'account';
+export type ConfigEditorTab = 'general' | 'links' | 'subcommands' | 'account';
 
 interface ConfigEditorProps {
   config: AppConfig;
@@ -27,6 +28,7 @@ interface ConfigEditorProps {
   onPreview: (background: BackgroundConfig | undefined) => void;
   initialTab?: ConfigEditorTab;
   accountControls?: AccountTabProps;
+  stageNewSubcommand?: boolean;
 }
 
 export function ConfigEditor({
@@ -36,14 +38,28 @@ export function ConfigEditor({
   onPreview,
   initialTab = 'general',
   accountControls,
+  stageNewSubcommand = false,
 }: ConfigEditorProps) {
   const [tab, setTab] = useState<ConfigEditorTab>(
     initialTab === 'account' && !accountControls ? 'general' : initialTab,
   );
-  const [draftConfig, setDraftConfig] = useState<AppConfig>(() => ({
-    ...config,
-    modules: config.modules.map((m) => ({ ...m, links: m.links.map((l) => ({ ...l })) })),
-  }));
+  const [draftConfig, setDraftConfig] = useState<AppConfig>(() => {
+    const subcommands = config.subcommands?.map((subcommand) => ({
+      ...subcommand,
+      items: subcommand.items.map((item) => ({ ...item })),
+      freeform: subcommand.freeform && {
+        ...subcommand.freeform,
+        fields: subcommand.freeform.fields.map((field) => ({ ...field })),
+      },
+    }));
+    return {
+      ...config,
+      modules: config.modules.map((m) => ({ ...m, links: m.links.map((l) => ({ ...l })) })),
+      subcommands: stageNewSubcommand
+        ? [{ name: '', trigger: '', items: [] }, ...(subcommands ?? [])]
+        : subcommands,
+    };
+  });
   const [activePanel, setActivePanel] = useState<ImportExportPanel>('none');
   const [exportString, setExportString] = useState('');
   const [copied, setCopied] = useState(false);
@@ -163,6 +179,12 @@ export function ConfigEditor({
         >
           Links
         </button>
+        <button
+          className={`config-editor-tab${tab === 'subcommands' ? ' active' : ''}`}
+          onClick={() => setTab('subcommands')}
+        >
+          Subcommands
+        </button>
         {accountControls && (
           <button
             className={`config-editor-tab${tab === 'account' ? ' active' : ''}`}
@@ -189,6 +211,16 @@ export function ConfigEditor({
           onSave={handleSave}
           onClose={onClose}
           onConfigChange={handleConfigChange}
+        />
+      )}
+
+      {tab === 'subcommands' && (
+        <SubcommandsTab
+          config={draftConfig}
+          onSave={handleSave}
+          onClose={onClose}
+          onConfigChange={handleConfigChange}
+          stageNew={false}
         />
       )}
 

@@ -31,6 +31,30 @@ describe('ConfigEditorScreen', () => {
     expect(generalTab).not.toHaveClass('active');
   });
 
+  it('opens the Subcommands tab with a staged unsaved card', () => {
+    render(<ConfigEditor {...defaultProps} initialTab="subcommands" stageNewSubcommand />);
+
+    expect(screen.getByRole('button', { name: 'Subcommands' })).toHaveClass('active');
+    expect(screen.getByLabelText('Subcommand 1 name')).toHaveValue('');
+  });
+
+  it('preserves a subcommand draft across settings tabs', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<ConfigEditor {...defaultProps} onSave={onSave} initialTab="subcommands" stageNewSubcommand />);
+
+    await user.type(screen.getByLabelText('Subcommand 1 name'), 'Docs');
+    await user.type(screen.getByLabelText('Subcommand 1 trigger'), 'docs');
+    await user.click(screen.getByRole('button', { name: 'Add Item' }));
+    await user.type(screen.getByLabelText('Docs item 1 label'), 'Guide');
+    await user.type(screen.getByLabelText('Docs item 1 URL'), 'https://example.com');
+    await user.click(screen.getByRole('button', { name: 'General' }));
+    await user.click(screen.getByRole('button', { name: 'Subcommands' }));
+    await user.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+
+    expect((onSave.mock.calls[0][0] as AppConfig).subcommands?.[0].trigger).toBe('docs');
+  });
+
   it('shows export modal with base64 string', async () => {
     const user = userEvent.setup();
     render(<ConfigEditor {...defaultProps} />);
