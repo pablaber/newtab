@@ -36,6 +36,10 @@ async function openAddLinkForm(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('option', { name: /Add Link/ }));
 }
 
+async function openRemoveLinks(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('option', { name: /Remove Links/ }));
+}
+
 describe('CommandPalette', () => {
   it('autofocuses and filters the declarative command list', async () => {
     const user = userEvent.setup();
@@ -69,6 +73,62 @@ describe('CommandPalette', () => {
 
     expect(onClose).toHaveBeenCalledOnce();
     expect(onOpenSettings).toHaveBeenCalledOnce();
+  });
+
+  it('searches links without including subcommands and asks for confirmation on Enter', async () => {
+    const user = userEvent.setup();
+    const config: AppConfig = {
+      ...mockConfig,
+      subcommands: [{ name: 'GitHub Command', trigger: 'github', items: [] }],
+    };
+    renderPalette(config);
+    await openRemoveLinks(user);
+
+    const input = screen.getByPlaceholderText('Search links to remove...');
+    expect(input).toHaveFocus();
+    await user.type(input, 'github');
+
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    expect(screen.getByRole('option', { name: /GitHub.*Favorites/ })).toBeInTheDocument();
+    expect(screen.queryByText('GitHub Command')).not.toBeInTheDocument();
+
+    await user.keyboard('{Enter}');
+    expect(screen.getByText(/Are you sure you want to remove/)).toHaveTextContent(
+      'Are you sure you want to remove GitHub?',
+    );
+  });
+
+  it('removes the confirmed link without mutating the input config', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    const originalLinks = [...mockConfig.modules[0].links];
+    renderPalette(mockConfig, onSave);
+    await openRemoveLinks(user);
+
+    await user.type(screen.getByPlaceholderText('Search links to remove...'), 'hacker');
+    await user.keyboard('{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Remove Link' }));
+
+    expect(onSave).toHaveBeenCalledOnce();
+    const saved = onSave.mock.calls[0][0] as AppConfig;
+    expect(saved.modules[0].links.map((link) => link.label)).toEqual(['GitHub', 'YouTube']);
+    expect(saved.modules[1]).toBe(mockConfig.modules[1]);
+    expect(mockConfig.modules[0].links).toEqual(originalLinks);
+  });
+
+  it('keeps the link when removal confirmation is cancelled', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    renderPalette(mockConfig, onSave);
+    await openRemoveLinks(user);
+
+    await user.type(screen.getByPlaceholderText('Search links to remove...'), 'youtube');
+    await user.keyboard('{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Keep Link' }));
+
+    expect(onSave).not.toHaveBeenCalled();
+    expect(screen.getByPlaceholderText('Search links to remove...')).toHaveFocus();
+    expect(screen.getByRole('option', { name: /YouTube.*Favorites/ })).toBeInTheDocument();
   });
 
   it('opens a staged Subcommands settings card', async () => {
