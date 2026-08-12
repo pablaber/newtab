@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/pablaber/newtab/compare/v0.13.0...v0.14.0) (2026-08-12)
+
+
+### Features
+
+* add remove links command ([#66](https://github.com/pablaber/newtab/issues/66)) ([7300ca6](https://github.com/pablaber/newtab/commit/7300ca666def1c47b54f257a0ac9c4a604ffc37e))
+
 ## [0.13.0](https://github.com/pablaber/newtab/compare/v0.12.0...v0.13.0) (2026-08-12)
 
 
