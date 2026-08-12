@@ -55,7 +55,11 @@ All configuration is managed from the built-in settings page, which has two tabs
 
 Configuration is stored in the browser's localStorage. On first load, a default `config.json` seeds the initial config. You can also import/export the full config as a base64 string from the settings header.
 
+On [thenewtab.app](https://thenewtab.app), approved beta users can optionally sign in with an email code to sync their config across browsers. Signing in is not required: guest configs remain local to the browser, and signing out restores the browser's guest config. Self-hosted builds remain local-only by default.
+
 For the full config file schema and examples, see [docs/config-file.md](docs/config-file.md).
+
+Hosted deployment operators can configure optional account sync using [the sync setup guide](docs/sync-setup.md).
 
 ## Docker
 
