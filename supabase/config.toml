@@ -1,0 +1,5 @@
+project_id = "newtab"
+
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/hook_restrict_sync_beta_signup"

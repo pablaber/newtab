@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
 import type { AppConfig, BackgroundConfig } from '../../types/config.ts';
+import { validateConfig } from '../../utils/configValidation.ts';
 import { GeneralTab } from './components/GeneralTab.tsx';
 import { LinksTab } from './components/LinksTab.tsx';
-
-const STORAGE_KEY = 'newtab-config';
+import { AccountTab, type AccountTabProps } from './components/AccountTab.tsx';
 
 function toBase64(str: string): string {
   const bytes = new TextEncoder().encode(str);
@@ -17,38 +17,29 @@ function fromBase64(b64: string): string {
   return new TextDecoder().decode(bytes);
 }
 
-function validateConfig(value: unknown): value is AppConfig {
-  if (typeof value !== 'object' || value === null) return false;
-  const obj = value as Record<string, unknown>;
-  if (typeof obj.version !== 'number') return false;
-  if (!Array.isArray(obj.modules)) return false;
-  for (const mod of obj.modules) {
-    if (typeof mod !== 'object' || mod === null) return false;
-    const m = mod as Record<string, unknown>;
-    if (m.type !== 'links') return false;
-    if (typeof m.title !== 'string') return false;
-    if (!Array.isArray(m.links)) return false;
-    for (const link of m.links) {
-      if (typeof link !== 'object' || link === null) return false;
-      const l = link as Record<string, unknown>;
-      if (typeof l.url !== 'string' || typeof l.label !== 'string') return false;
-    }
-  }
-  return true;
-}
-
 type ImportExportPanel = 'none' | 'export' | 'import';
-type Tab = 'general' | 'links';
+export type ConfigEditorTab = 'general' | 'links' | 'account';
 
 interface ConfigEditorProps {
   config: AppConfig;
   onSave: (config: AppConfig) => void;
   onClose: () => void;
   onPreview: (background: BackgroundConfig | undefined) => void;
+  initialTab?: ConfigEditorTab;
+  accountControls?: AccountTabProps;
 }
 
-export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEditorProps) {
-  const [tab, setTab] = useState<Tab>('general');
+export function ConfigEditor({
+  config,
+  onSave,
+  onClose,
+  onPreview,
+  initialTab = 'general',
+  accountControls,
+}: ConfigEditorProps) {
+  const [tab, setTab] = useState<ConfigEditorTab>(
+    initialTab === 'account' && !accountControls ? 'general' : initialTab,
+  );
   const [draftConfig, setDraftConfig] = useState<AppConfig>(() => ({
     ...config,
     modules: config.modules.map((m) => ({ ...m, links: m.links.map((l) => ({ ...l })) })),
@@ -73,10 +64,7 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
       setActivePanel('none');
       return;
     }
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      setExportString(toBase64(raw));
-    }
+    setExportString(toBase64(JSON.stringify(config)));
     setCopied(false);
     setActivePanel('export');
   };
@@ -175,6 +163,14 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
         >
           Links
         </button>
+        {accountControls && (
+          <button
+            className={`config-editor-tab${tab === 'account' ? ' active' : ''}`}
+            onClick={() => setTab('account')}
+          >
+            Account
+          </button>
+        )}
       </div>
 
       {tab === 'general' && (
@@ -194,6 +190,10 @@ export function ConfigEditor({ config, onSave, onClose, onPreview }: ConfigEdito
           onClose={onClose}
           onConfigChange={handleConfigChange}
         />
+      )}
+
+      {tab === 'account' && accountControls && (
+        <AccountTab {...accountControls} />
       )}
 
       {activePanel !== 'none' && (

@@ -329,6 +329,25 @@
   color: rgba(var(--fg), 0.8);
 }
 
+.account-button {
+  position: relative;
+}
+
+.account-button-synced {
+  color: rgba(var(--fg), 0.75);
+}
+
+.account-button-indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid rgb(var(--dropdown-bg));
+  border-radius: 50%;
+  background: rgb(var(--fg));
+}
+
 /* Config Editor */
 .config-editor {
   max-width: 600px;
@@ -747,6 +766,174 @@
   padding: 8px 12px;
   background: rgba(80, 200, 120, 0.1);
   border-radius: 6px;
+}
+
+/* Synced account */
+.account-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.account-section .config-editor-section-title {
+  margin-bottom: 0;
+}
+
+.account-intro,
+.account-help,
+.account-deletion,
+.account-beta-help {
+  margin: 0;
+  color: rgba(var(--fg), 0.58);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.account-deletion,
+.account-beta-help {
+  padding-top: 4px;
+  border-top: 1px solid rgba(var(--fg), 0.08);
+  font-size: 0.8rem;
+}
+
+.account-deletion a,
+.account-beta-help a {
+  color: rgba(var(--fg), 0.78);
+}
+
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.account-form > .config-editor-btn {
+  align-self: flex-start;
+}
+
+.account-code {
+  max-width: 180px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.15rem;
+  letter-spacing: 0.18em;
+}
+
+.account-identity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-email {
+  min-width: 0;
+  overflow: hidden;
+  color: rgb(var(--fg));
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.account-status {
+  flex: 0 0 auto;
+  padding: 4px 9px;
+  border: 1px solid rgba(var(--fg), 0.12);
+  border-radius: 999px;
+  color: rgba(var(--fg), 0.62);
+  background: rgba(var(--fg), 0.05);
+  font-size: 0.72rem;
+}
+
+.account-status-synced {
+  color: rgba(var(--fg), 0.82);
+  background: rgba(var(--fg), 0.1);
+}
+
+.account-status-error {
+  border-color: rgba(var(--fg), 0.3);
+  color: rgb(var(--fg));
+}
+
+.account-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.account-actions .config-editor-btn:disabled,
+.account-form > .config-editor-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.account-text-button {
+  padding: 8px;
+  border: none;
+  color: rgba(var(--fg), 0.52);
+  background: transparent;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.account-text-button:hover:not(:disabled) {
+  color: rgba(var(--fg), 0.82);
+}
+
+.account-text-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* First sync choice */
+.sync-conflict-overlay {
+  z-index: 30;
+}
+
+.sync-conflict-modal {
+  max-width: 560px;
+}
+
+.sync-conflict-intro {
+  margin: 12px 0 20px;
+  color: rgba(var(--fg), 0.62);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.sync-conflict-options {
+  display: grid;
+  gap: 10px;
+}
+
+.sync-conflict-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid rgba(var(--fg), 0.1);
+  border-radius: 10px;
+  background: rgba(var(--fg), 0.04);
+}
+
+.sync-conflict-option div {
+  display: grid;
+  gap: 4px;
+}
+
+.sync-conflict-option span {
+  color: rgba(var(--fg), 0.52);
+  font-size: 0.8rem;
+}
+
+.sync-conflict-option .config-editor-btn {
+  flex: 0 0 auto;
+}
+
+.sync-conflict-cancel {
+  margin-top: 16px;
 }
 
 /* Links Tab -- Section Cards */
@@ -1414,5 +1601,23 @@
     width: 100%;
     margin-left: 0;
     text-align: left;
+  }
+
+  .config-editor {
+    padding-inline: 16px;
+  }
+
+  .config-editor-tab {
+    flex: 1;
+    padding-inline: 8px;
+  }
+
+  .sync-conflict-option {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sync-conflict-option .config-editor-btn {
+    align-self: flex-start;
   }
 }

@@ -2,14 +2,32 @@ import { useState, useEffect, useMemo } from 'react';
 import { useConfig } from './hooks/useConfig.ts';
 import type { BackgroundConfig } from './types/config.ts';
 import { BackgroundLayer } from './components/BackgroundLayer.tsx';
+import { SyncConflictModal } from './components/SyncConflictModal.tsx';
 import { HomeScreen } from './screens/HomeScreen/index.ts';
-import { ConfigEditor } from './screens/ConfigEditorScreen/index.ts';
+import { ConfigEditor, type ConfigEditorTab } from './screens/ConfigEditorScreen/index.ts';
 import { resolveForeground, foregroundCssVars } from './utils/foreground.ts';
 import './App.css';
 
 function App() {
-  const { config, loading, error, setConfig } = useConfig();
+  const {
+    config,
+    loading,
+    error,
+    setConfig,
+    account,
+    syncStatus,
+    syncError,
+    lastSyncedAt,
+    initialSyncConflict,
+    requestEmailCode,
+    verifyEmailCode,
+    signOut,
+    retrySync,
+    resolveInitialSync,
+    setEditorOpen,
+  } = useConfig();
   const [showConfig, setShowConfig] = useState(false);
+  const [configTab, setConfigTab] = useState<ConfigEditorTab>('general');
   const [previewBackground, setPreviewBackground] = useState<BackgroundConfig | null>(null);
 
   const effectiveBackground: BackgroundConfig | undefined =
@@ -26,6 +44,20 @@ function App() {
     document.documentElement.style.setProperty('--dropdown-bg', dropdownBg);
   }, [foreground]);
 
+  useEffect(() => {
+    setEditorOpen(showConfig);
+  }, [setEditorOpen, showConfig]);
+
+  const openSettings = (tab: ConfigEditorTab = 'general') => {
+    setConfigTab(tab);
+    setShowConfig(true);
+  };
+
+  const closeSettings = () => {
+    setShowConfig(false);
+    setPreviewBackground(null);
+  };
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
@@ -39,11 +71,31 @@ function App() {
       <>
         <BackgroundLayer background={previewBackground ?? config.background} />
         <ConfigEditor
+          key={account.status === 'signed-in'
+            ? `${account.userId}:${lastSyncedAt ?? 'pending'}`
+            : account.status}
           config={config}
           onSave={setConfig}
-          onClose={() => { setShowConfig(false); setPreviewBackground(null); }}
+          onClose={closeSettings}
           onPreview={(bg) => setPreviewBackground(bg ?? null)}
+          initialTab={configTab}
+          accountControls={account.status === 'disabled' ? undefined : {
+            account,
+            syncStatus,
+            syncError,
+            lastSyncedAt,
+            onRequestEmailCode: requestEmailCode,
+            onVerifyEmailCode: verifyEmailCode,
+            onSignOut: signOut,
+            onRetrySync: retrySync,
+          }}
         />
+        {initialSyncConflict && (
+          <SyncConflictModal
+            conflict={initialSyncConflict}
+            onResolve={(choice) => void resolveInitialSync(choice)}
+          />
+        )}
       </>
     );
   }
@@ -54,8 +106,17 @@ function App() {
       <HomeScreen
         config={config}
         onSaveConfig={setConfig}
-        onOpenSettings={() => setShowConfig(true)}
+        onOpenSettings={() => openSettings('general')}
+        account={account}
+        syncStatus={syncStatus}
+        onOpenAccount={account.status === 'disabled' ? undefined : () => openSettings('account')}
       />
+      {initialSyncConflict && (
+        <SyncConflictModal
+          conflict={initialSyncConflict}
+          onResolve={(choice) => void resolveInitialSync(choice)}
+        />
+      )}
     </>
   );
 }

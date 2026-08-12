@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useHotkey } from '@tanstack/react-hotkeys';
 import type { AppConfig } from '../../types/config.ts';
+import type { AccountState, SyncStatus } from '../../hooks/useConfig.ts';
 import { isHosted } from '../../env.ts';
 import { SearchBar } from './components/SearchBar.tsx';
 import { ModuleGrid } from './components/ModuleGrid.tsx';
@@ -11,9 +12,19 @@ interface HomeScreenProps {
   config: AppConfig;
   onSaveConfig: (config: AppConfig) => void;
   onOpenSettings: () => void;
+  account?: AccountState;
+  syncStatus?: SyncStatus;
+  onOpenAccount?: () => void;
 }
 
-export function HomeScreen({ config, onSaveConfig, onOpenSettings }: HomeScreenProps) {
+export function HomeScreen({
+  config,
+  onSaveConfig,
+  onOpenSettings,
+  account,
+  syncStatus = 'local',
+  onOpenAccount,
+}: HomeScreenProps) {
   const [navigating, setNavigating] = useState<{ url: string; label: string } | null>(null);
   const [showAbout, setShowAbout] = useState(false);
   const [showCommands, setShowCommands] = useState(false);
@@ -56,6 +67,24 @@ export function HomeScreen({ config, onSaveConfig, onOpenSettings }: HomeScreenP
   return (
     <>
       <div className="top-right-buttons">
+        {account && account.status !== 'disabled' && onOpenAccount && (
+          <button
+            className={`config-button account-button account-button-${syncStatus}`}
+            tabIndex={-1}
+            onClick={onOpenAccount}
+            aria-label={account.status === 'signed-out'
+              ? 'Sign in to sync'
+              : syncStatus === 'error'
+                ? 'Account – sync needs attention'
+                : `Account – ${syncStatus}`}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21a8 8 0 0 0-16 0" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            {syncStatus === 'error' && <span className="account-button-indicator" />}
+          </button>
+        )}
         <button className="config-button" tabIndex={-1} onClick={() => setShowAbout(true)} aria-label="About">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />

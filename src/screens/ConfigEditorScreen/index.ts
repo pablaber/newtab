@@ -1,1 +1,1 @@
-export { ConfigEditor } from './ConfigEditorScreen.tsx';
+export { ConfigEditor, type ConfigEditorTab } from './ConfigEditorScreen.tsx';

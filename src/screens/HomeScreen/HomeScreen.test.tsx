@@ -43,6 +43,24 @@ describe('HomeScreen', () => {
     expect(onOpenSettings).toHaveBeenCalledOnce();
   });
 
+  it('shows account sync status and opens the account screen when enabled', async () => {
+    const user = userEvent.setup();
+    const onOpenAccount = vi.fn();
+    render(
+      <HomeScreen
+        config={mockConfig}
+        onSaveConfig={vi.fn()}
+        onOpenSettings={vi.fn()}
+        account={{ status: 'signed-in', userId: 'user-1', email: 'person@example.com' }}
+        syncStatus="error"
+        onOpenAccount={onOpenAccount}
+      />,
+    );
+
+    await user.click(screen.getByLabelText('Account – sync needs attention'));
+    expect(onOpenAccount).toHaveBeenCalledOnce();
+  });
+
   it('opens commands with Mod+P and closes the About modal', async () => {
     const user = userEvent.setup();
     render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);

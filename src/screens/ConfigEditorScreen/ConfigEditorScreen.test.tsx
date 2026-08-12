@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ConfigEditor } from './ConfigEditorScreen.tsx';
 import { mockConfig } from '../../test/fixtures.ts';
@@ -33,7 +33,6 @@ describe('ConfigEditorScreen', () => {
 
   it('shows export modal with base64 string', async () => {
     const user = userEvent.setup();
-    localStorage.setItem('newtab-config', JSON.stringify(mockConfig));
     render(<ConfigEditor {...defaultProps} />);
 
     await user.click(screen.getByRole('button', { name: 'Export' }));
@@ -41,9 +40,7 @@ describe('ConfigEditorScreen', () => {
 
     const modal = screen.getByText('Export Config').closest('.config-editor-modal')!;
     const textarea = within(modal as HTMLElement).getByRole('textbox');
-    expect((textarea as HTMLTextAreaElement).value.length).toBeGreaterThan(0);
-
-    localStorage.removeItem('newtab-config');
+    expect(atob((textarea as HTMLTextAreaElement).value)).toBe(JSON.stringify(mockConfig));
   });
 
   it('saves and closes on successful import', async () => {
@@ -129,5 +126,66 @@ describe('ConfigEditorScreen', () => {
     expect(savedConfig.search?.placeholder).toBe('Search...');
     // Original modules should still be there
     expect(savedConfig.modules).toHaveLength(2);
+  });
+
+  it('requests and verifies an email code from the Account tab', async () => {
+    const user = userEvent.setup();
+    const onRequestEmailCode = vi.fn().mockResolvedValue(undefined);
+    const onVerifyEmailCode = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <ConfigEditor
+        {...defaultProps}
+        initialTab="account"
+        accountControls={{
+          account: { status: 'signed-out' },
+          syncStatus: 'local',
+          syncError: null,
+          lastSyncedAt: null,
+          onRequestEmailCode,
+          onVerifyEmailCode,
+          onSignOut: vi.fn(),
+          onRetrySync: vi.fn(),
+        }}
+      />,
+    );
+
+    await user.type(screen.getByLabelText('Email address'), 'Person@Example.com');
+    await user.click(screen.getByRole('button', { name: 'Send login code' }));
+    await waitFor(() => expect(onRequestEmailCode).toHaveBeenCalledWith('person@example.com'));
+
+    await user.type(screen.getByLabelText('6-digit code'), '123456');
+    await user.click(screen.getByRole('button', { name: 'Verify code' }));
+    await waitFor(() => {
+      expect(onVerifyEmailCode).toHaveBeenCalledWith('person@example.com', '123456');
+    });
+  });
+
+  it('shows signed-in sync state and account controls', () => {
+    render(
+      <ConfigEditor
+        {...defaultProps}
+        initialTab="account"
+        accountControls={{
+          account: { status: 'signed-in', userId: 'user-1', email: 'person@example.com' },
+          syncStatus: 'error',
+          syncError: 'Network unavailable',
+          lastSyncedAt: null,
+          onRequestEmailCode: vi.fn(),
+          onVerifyEmailCode: vi.fn(),
+          onSignOut: vi.fn(),
+          onRetrySync: vi.fn(),
+        }}
+      />,
+    );
+
+    expect(screen.getByText('person@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Sync needs attention')).toBeInTheDocument();
+    expect(screen.getByText('Network unavailable')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry sync' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Contact support' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('support@thenewtab.app'),
+    );
   });
 });
