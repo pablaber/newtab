@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/pablaber/newtab/compare/v0.11.0...v0.12.0) (2026-08-12)
+
+
+### Features
+
+* add optional account sync ([#61](https://github.com/pablaber/newtab/issues/61)) ([8a42629](https://github.com/pablaber/newtab/commit/8a4262995123fba12274ddec81e5c69a5c3a1d68))
+
 ## [0.11.0](https://github.com/pablaber/newtab/compare/v0.10.0...v0.11.0) (2026-08-10)
 
 
