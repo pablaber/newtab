@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { AccountState } from '../../../hooks/useConfig.ts';
 import type { AppConfig } from '../../../types/config.ts';
 import { mockConfig, mockHiddenModule } from '../../../test/fixtures.ts';
 import { CommandPalette } from './CommandPalette.tsx';
@@ -10,6 +11,9 @@ function renderPalette(
   onClose = vi.fn(),
   onOpenSettings = vi.fn(),
   onOpenAbout = vi.fn(),
+  account?: AccountState,
+  onOpenAccount = vi.fn(),
+  onSignOut = vi.fn(),
 ) {
   render(
     <CommandPalette
@@ -18,9 +22,12 @@ function renderPalette(
       onClose={onClose}
       onOpenSettings={onOpenSettings}
       onOpenAbout={onOpenAbout}
+      account={account}
+      onOpenAccount={onOpenAccount}
+      onSignOut={onSignOut}
     />,
   );
-  return { onSave, onClose, onOpenSettings, onOpenAbout };
+  return { onSave, onClose, onOpenSettings, onOpenAbout, onOpenAccount, onSignOut };
 }
 
 async function openAddLinkForm(user: ReturnType<typeof userEvent.setup>) {
@@ -70,6 +77,56 @@ describe('CommandPalette', () => {
 
     expect(onClose).toHaveBeenCalledOnce();
     expect(onOpenAbout).toHaveBeenCalledOnce();
+  });
+
+  it('shows Account and Sign In only while signed out, with both opening Account', async () => {
+    const user = userEvent.setup();
+    const { onClose, onOpenAccount, onSignOut } = renderPalette(
+      mockConfig,
+      vi.fn(),
+      vi.fn(),
+      vi.fn(),
+      vi.fn(),
+      { status: 'signed-out' },
+    );
+
+    expect(screen.getByRole('option', { name: /^Account/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /^Sign In/ })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /^Sign Out/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('option', { name: /^Sign In/ }));
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(onOpenAccount).toHaveBeenCalledOnce();
+    expect(onSignOut).not.toHaveBeenCalled();
+  });
+
+  it('shows Account and Sign Out only while signed in, and signs out immediately', async () => {
+    const user = userEvent.setup();
+    const { onClose, onOpenAccount, onSignOut } = renderPalette(
+      mockConfig,
+      vi.fn(),
+      vi.fn(),
+      vi.fn(),
+      vi.fn(),
+      { status: 'signed-in', userId: 'user-1', email: 'person@example.com' },
+    );
+
+    expect(screen.getByRole('option', { name: /^Account/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /^Sign Out/ })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /^Sign In/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('option', { name: /^Sign Out/ }));
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(onSignOut).toHaveBeenCalledOnce();
+    expect(onOpenAccount).not.toHaveBeenCalled();
+  });
+
+  it('hides account commands when account sync is disabled', () => {
+    renderPalette(mockConfig, vi.fn(), vi.fn(), vi.fn(), vi.fn(), { status: 'disabled' });
+
+    expect(screen.queryByRole('option', { name: /^Account/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /^Sign In/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /^Sign Out/ })).not.toBeInTheDocument();
   });
 
   it('closes on Escape and backdrop click', async () => {

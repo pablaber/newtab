@@ -15,6 +15,7 @@ interface HomeScreenProps {
   account?: AccountState;
   syncStatus?: SyncStatus;
   onOpenAccount?: () => void;
+  onSignOut?: () => void | Promise<void>;
 }
 
 export function HomeScreen({
@@ -24,6 +25,7 @@ export function HomeScreen({
   account,
   syncStatus = 'local',
   onOpenAccount,
+  onSignOut,
 }: HomeScreenProps) {
   const [navigating, setNavigating] = useState<{ url: string; label: string } | null>(null);
   const [showAbout, setShowAbout] = useState(false);
@@ -139,6 +141,9 @@ export function HomeScreen({
           onClose={() => setShowCommands(false)}
           onOpenSettings={onOpenSettings}
           onOpenAbout={() => setShowAbout(true)}
+          account={account}
+          onOpenAccount={onOpenAccount}
+          onSignOut={onSignOut}
         />
       )}
     </>
