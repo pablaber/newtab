@@ -86,6 +86,47 @@ describe('HomeScreen', () => {
     expect(screen.queryByRole('dialog', { name: 'Commands' })).not.toBeInTheDocument();
   });
 
+  it('opens the account screen from the command palette', async () => {
+    const user = userEvent.setup();
+    const onOpenAccount = vi.fn();
+    render(
+      <HomeScreen
+        config={mockConfig}
+        onSaveConfig={vi.fn()}
+        onOpenSettings={vi.fn()}
+        account={{ status: 'signed-out' }}
+        onOpenAccount={onOpenAccount}
+      />,
+    );
+
+    await user.keyboard('{Control>}p{/Control}');
+    await user.click(screen.getByRole('option', { name: /^Account/ }));
+
+    expect(onOpenAccount).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('dialog', { name: 'Commands' })).not.toBeInTheDocument();
+  });
+
+  it('signs out from the command palette when signed in', async () => {
+    const user = userEvent.setup();
+    const onSignOut = vi.fn().mockResolvedValue(undefined);
+    render(
+      <HomeScreen
+        config={mockConfig}
+        onSaveConfig={vi.fn()}
+        onOpenSettings={vi.fn()}
+        account={{ status: 'signed-in', userId: 'user-1', email: 'person@example.com' }}
+        onOpenAccount={vi.fn()}
+        onSignOut={onSignOut}
+      />,
+    );
+
+    await user.keyboard('{Control>}p{/Control}');
+    await user.click(screen.getByRole('option', { name: /^Sign Out/ }));
+
+    expect(onSignOut).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('dialog', { name: 'Commands' })).not.toBeInTheDocument();
+  });
+
   it('opens About from the command palette', async () => {
     const user = userEvent.setup();
     render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);

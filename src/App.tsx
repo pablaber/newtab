@@ -110,6 +110,7 @@ function App() {
         account={account}
         syncStatus={syncStatus}
         onOpenAccount={account.status === 'disabled' ? undefined : () => openSettings('account')}
+        onSignOut={account.status === 'signed-in' ? signOut : undefined}
       />
       {initialSyncConflict && (
         <SyncConflictModal

@@ -1,9 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useHotkey } from '@tanstack/react-hotkeys';
+import type { AccountState } from '../../../hooks/useConfig.ts';
 import type { AppConfig, ModuleConfig } from '../../../types/config.ts';
 import { ensureProtocol, MAX_LINK_LABEL, MAX_SECTION_NAME } from '../../../utils/linkConfig.ts';
 
-type CommandId = 'add-link' | 'open-settings' | 'about';
+type CommandId = 'add-link' | 'open-settings' | 'account' | 'sign-in' | 'sign-out' | 'about';
 type PaletteView = 'commands' | 'add-link';
 
 interface CommandDefinition {
@@ -13,7 +14,7 @@ interface CommandDefinition {
   keywords: string[];
 }
 
-const COMMANDS = [
+const BASE_COMMANDS = [
   {
     id: 'add-link',
     label: 'Add Link',
@@ -34,12 +35,36 @@ const COMMANDS = [
   },
 ] satisfies readonly CommandDefinition[];
 
+const ACCOUNT_COMMAND = {
+  id: 'account',
+  label: 'Account',
+  description: 'Open your account and sync settings',
+  keywords: ['profile', 'sync', 'user'],
+} satisfies CommandDefinition;
+
+const SIGN_IN_COMMAND = {
+  id: 'sign-in',
+  label: 'Sign In',
+  description: 'Sign in to sync your new tab page',
+  keywords: ['account', 'login', 'sync'],
+} satisfies CommandDefinition;
+
+const SIGN_OUT_COMMAND = {
+  id: 'sign-out',
+  label: 'Sign Out',
+  description: 'Sign out of your synced account',
+  keywords: ['account', 'logout', 'sync'],
+} satisfies CommandDefinition;
+
 interface CommandPaletteProps {
   config: AppConfig;
   onSave: (config: AppConfig) => void;
   onClose: () => void;
   onOpenSettings: () => void;
   onOpenAbout: () => void;
+  account?: AccountState;
+  onOpenAccount?: () => void;
+  onSignOut?: () => void | Promise<void>;
 }
 
 interface AddLinkFormProps extends Pick<CommandPaletteProps, 'config' | 'onSave' | 'onClose'> {
@@ -328,6 +353,25 @@ function CommandIcon({ id }: { id: CommandId }) {
     );
   }
 
+  if (id === 'account' || id === 'sign-in') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21a8 8 0 0 0-16 0" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    );
+  }
+
+  if (id === 'sign-out') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10 17l5-5-5-5" />
+        <path d="M15 12H3" />
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+      </svg>
+    );
+  }
+
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 5v14" />
@@ -342,6 +386,9 @@ export function CommandPalette({
   onClose,
   onOpenSettings,
   onOpenAbout,
+  account,
+  onOpenAccount,
+  onSignOut,
 }: CommandPaletteProps) {
   const [view, setView] = useState<PaletteView>('commands');
   const [query, setQuery] = useState('');
@@ -351,17 +398,30 @@ export function CommandPalette({
   const titleId = useId();
   const listId = useId();
 
+  const commands = useMemo<CommandDefinition[]>(() => {
+    const availableCommands: CommandDefinition[] = [...BASE_COMMANDS];
+    if (!account || account.status === 'disabled' || !onOpenAccount) return availableCommands;
+
+    availableCommands.splice(2, 0, ACCOUNT_COMMAND);
+    if (account.status === 'signed-in' && onSignOut) {
+      availableCommands.splice(3, 0, SIGN_OUT_COMMAND);
+    } else if (account.status === 'signed-out') {
+      availableCommands.splice(3, 0, SIGN_IN_COMMAND);
+    }
+    return availableCommands;
+  }, [account, onOpenAccount, onSignOut]);
+
   const filteredCommands = useMemo(() => {
     const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
-    if (terms.length === 0) return COMMANDS;
+    if (terms.length === 0) return commands;
 
-    return COMMANDS.filter((command) => {
+    return commands.filter((command) => {
       const haystack = [command.label, command.description, ...command.keywords]
         .join(' ')
         .toLocaleLowerCase();
       return terms.every((term) => haystack.includes(term));
     });
-  }, [query]);
+  }, [commands, query]);
 
   useHotkey('Escape', onClose, { preventDefault: true });
 
@@ -381,10 +441,20 @@ export function CommandPalette({
     }
 
     onClose();
-    if (command.id === 'open-settings') {
-      onOpenSettings();
-    } else {
-      onOpenAbout();
+    switch (command.id) {
+      case 'open-settings':
+        onOpenSettings();
+        break;
+      case 'account':
+      case 'sign-in':
+        onOpenAccount?.();
+        break;
+      case 'sign-out':
+        void onSignOut?.();
+        break;
+      case 'about':
+        onOpenAbout();
+        break;
     }
   };
 
