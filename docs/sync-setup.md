@@ -84,15 +84,13 @@ postgresql://postgres.PROJECT_REF:URL_ENCODED_PASSWORD@REGION.pooler.supabase.co
 
 If the database password contains reserved URL characters such as `@`, `:`, `/`, `?`, `#`, or `%`, percent-encode the password portion before saving the URL. Keep schema changes in `supabase/migrations/`; direct production changes through the SQL or Table Editor can cause migration history drift.
 
-For the initial setup, apply the schema before releasing the account UI:
+For the initial setup, apply the schema from a trusted local shell before releasing the account UI:
 
-1. Open the repository's **Actions** tab in GitHub.
-2. Select **Migrate Supabase**.
-3. Choose **Run workflow**, select `main`, and confirm.
-4. Wait for both the migration preview and apply steps to succeed.
+1. Export the production Session pooler connection string as `SUPABASE_DB_URL` without committing it to a file.
+2. Run `npx --yes supabase@2.113.0 db push --db-url "$SUPABASE_DB_URL" --dry-run` and review the pending migration.
+3. Run `npx --yes supabase@2.113.0 db push --db-url "$SUPABASE_DB_URL" --yes` to apply it.
+4. Unset `SUPABASE_DB_URL` when finished.
 5. Add beta emails to `public.sync_beta_allowlist` and enable the auth hook before releasing the hosted app.
-
-The manual workflow uses the same concurrency lock as release migrations, so it will wait rather than run alongside a release migration.
 
 ## 5. Support and deletion
 
