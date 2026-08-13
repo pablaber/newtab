@@ -3,6 +3,7 @@ import { useHotkey } from '@tanstack/react-hotkeys';
 import type { AppConfig } from '../../types/config.ts';
 import type { AccountState, SyncStatus } from '../../hooks/useConfig.ts';
 import { isHosted } from '../../env.ts';
+import { getFaviconUrl } from '../../utils/favicon.ts';
 import { SearchBar } from './components/SearchBar.tsx';
 import { ModuleGrid } from './components/ModuleGrid.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
@@ -51,11 +52,7 @@ export function HomeScreen({
   );
 
   if (navigating) {
-    let favicon = '';
-    try {
-      const domain = new URL(navigating.url).hostname;
-      favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-    } catch { /* ignore */ }
+    const favicon = getFaviconUrl(navigating.url);
 
     return (
       <div className="navigating">

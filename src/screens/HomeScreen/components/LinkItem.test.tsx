@@ -15,7 +15,7 @@ describe('LinkItem', () => {
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute(
       'src',
-      'https://www.google.com/s2/favicons?domain=github.com&sz=32',
+      'https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Fgithub.com%2F&sz=32',
     );
   });
 
