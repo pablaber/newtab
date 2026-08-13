@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GeneralTab } from './GeneralTab.tsx';
-import { mockConfig, mockBackgroundWithImage } from '../../../test/fixtures.ts';
+import { mockConfig, mockConfigNoSearch, mockBackgroundWithImage } from '../../../test/fixtures.ts';
 import type { AppConfig, BackgroundConfig } from '../../../types/config.ts';
 
 describe('GeneralTab', () => {
@@ -93,6 +93,65 @@ describe('GeneralTab', () => {
 
     const savedConfig = onSave.mock.calls[0][0] as AppConfig;
     expect(savedConfig.search?.enabled).toBe(true);
+  });
+
+  it('reflects the configured search enabled state in the toggle', () => {
+    const { unmount } = render(<GeneralTab {...defaultProps} />);
+    expect(screen.getByLabelText('Enable Search Bar')).toBeChecked();
+    unmount();
+
+    render(<GeneralTab {...defaultProps} config={mockConfigNoSearch} />);
+    expect(screen.getByLabelText('Enable Search Bar')).not.toBeChecked();
+  });
+
+  it('saves search as disabled when the toggle is turned off', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<GeneralTab {...defaultProps} onSave={onSave} />);
+
+    await user.click(screen.getByLabelText('Enable Search Bar'));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    const savedConfig = onSave.mock.calls[0][0] as AppConfig;
+    expect(savedConfig.search?.enabled).toBe(false);
+  });
+
+  it('saves search as enabled when the toggle is turned on', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<GeneralTab {...defaultProps} config={mockConfigNoSearch} onSave={onSave} />);
+
+    await user.click(screen.getByLabelText('Enable Search Bar'));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    const savedConfig = onSave.mock.calls[0][0] as AppConfig;
+    expect(savedConfig.search?.enabled).toBe(true);
+  });
+
+  it('keeps the configured placeholder when search is disabled', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<GeneralTab {...defaultProps} onSave={onSave} />);
+
+    await user.click(screen.getByLabelText('Enable Search Bar'));
+    expect(screen.queryByPlaceholderText('Filter links...')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    const savedConfig = onSave.mock.calls[0][0] as AppConfig;
+    expect(savedConfig.search).toEqual({ enabled: false, placeholder: 'Filter links...' });
+  });
+
+  it('pushes the toggled search state to the shared draft', async () => {
+    const user = userEvent.setup();
+    const onConfigChange = vi.fn();
+    render(<GeneralTab {...defaultProps} onConfigChange={onConfigChange} />);
+
+    await user.click(screen.getByLabelText('Enable Search Bar'));
+
+    const draft = onConfigChange.mock.calls.at(-1)?.[0] as AppConfig;
+    expect(draft.search?.enabled).toBe(false);
+    expect(draft.search?.placeholder).toBe('Filter links...');
   });
 
   it('renders background color input', () => {

@@ -89,6 +89,26 @@ describe('ConfigEditorScreen', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it('migrates removed fields out of an imported config', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+    render(<ConfigEditor {...defaultProps} onSave={onSave} />);
+
+    await user.click(screen.getByRole('button', { name: 'Import' }));
+
+    const modal = screen.getByText('Import Config').closest('.config-editor-modal')!;
+    const textarea = within(modal as HTMLElement).getByPlaceholderText('Paste exported base64 string here...');
+
+    const legacyConfig = {
+      ...mockConfig,
+      modules: mockConfig.modules.map((module) => ({ ...module, columns: 3 })),
+    };
+    await user.type(textarea, btoa(JSON.stringify(legacyConfig)));
+    await user.click(within(modal as HTMLElement).getByRole('button', { name: 'Apply' }));
+
+    expect(onSave).toHaveBeenCalledWith(mockConfig);
+  });
+
   it('shows import error on invalid base64 input', async () => {
     const user = userEvent.setup();
     render(<ConfigEditor {...defaultProps} />);

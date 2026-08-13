@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { AppConfig, BackgroundConfig, ForegroundSetting, GradientDirection } from '../../../types/config.ts';
+import type { AppConfig, BackgroundConfig, ForegroundSetting, GradientDirection, SearchConfig } from '../../../types/config.ts';
 
 const DIRECTION_ARROWS: { value: GradientDirection; arrow: string }[] = [
   { value: 'up', arrow: '↑' },
@@ -31,6 +31,7 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
   const [gradientColor2, setGradientColor2] = useState(config.background?.gradient?.color2 ?? '#000000');
   const [gradientDirection, setGradientDirection] = useState<GradientDirection>(config.background?.gradient?.direction ?? 'down');
   const [foreground, setForeground] = useState<ForegroundSetting>(config.background?.foreground ?? 'auto');
+  const [searchEnabled, setSearchEnabled] = useState(config.search?.enabled ?? false);
   const [placeholder, setPlaceholder] = useState(config.search?.placeholder ?? '');
 
   const hasImage = appliedImageUrl.trim() !== '';
@@ -48,19 +49,22 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
     },
   });
 
+  // The placeholder is kept even while search is disabled so re-enabling restores it
+  const currentSearch = (): SearchConfig => ({
+    ...config.search,
+    enabled: searchEnabled,
+    placeholder: placeholder || undefined,
+  });
+
   // Push general-tab changes to the shared draft so they persist across tab switches
   useEffect(() => {
     const updated: AppConfig = {
       ...config,
       background: currentBackground(),
-      search: {
-        ...config.search,
-        enabled: config.search?.enabled ?? false,
-        placeholder: placeholder || undefined,
-      },
+      search: currentSearch(),
     };
     onConfigChange(updated);
-  }, [appliedImageUrl, opacity, color, foreground, gradientEnabled, gradientColor2, gradientDirection, placeholder]);// eslint-disable-line react-hooks/exhaustive-deps
+  }, [appliedImageUrl, opacity, color, foreground, gradientEnabled, gradientColor2, gradientDirection, searchEnabled, placeholder]);// eslint-disable-line react-hooks/exhaustive-deps
 
   const buildGradient = (updates: { enabled?: boolean; color2?: string; direction?: GradientDirection } = {}) => ({
     enabled: updates.enabled ?? gradientEnabled,
@@ -100,11 +104,7 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
     onSave({
       ...config,
       background: currentBackground(),
-      search: {
-        ...config.search,
-        enabled: config.search?.enabled ?? false,
-        placeholder: placeholder || undefined,
-      },
+      search: currentSearch(),
     });
   };
 
@@ -240,15 +240,28 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
         <h2 className="config-editor-section-title">Search</h2>
 
         <div className="config-editor-field">
-          <span className="config-editor-label">Placeholder</span>
-          <input
-            type="text"
-            className="config-editor-input"
-            value={placeholder}
-            onChange={(e) => setPlaceholder(e.target.value)}
-            placeholder="Filter links..."
-          />
+          <label className="config-editor-toggle">
+            <input
+              type="checkbox"
+              checked={searchEnabled}
+              onChange={(e) => setSearchEnabled(e.target.checked)}
+            />
+            <span className="config-editor-toggle-label">Enable Search Bar</span>
+          </label>
         </div>
+
+        {searchEnabled && (
+          <div className="config-editor-field">
+            <span className="config-editor-label">Placeholder</span>
+            <input
+              type="text"
+              className="config-editor-input"
+              value={placeholder}
+              onChange={(e) => setPlaceholder(e.target.value)}
+              placeholder="Filter links..."
+            />
+          </div>
+        )}
       </div>
 
       <div className="config-editor-actions">

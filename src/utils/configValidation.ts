@@ -1,4 +1,4 @@
-import type { AppConfig } from '../types/config.ts';
+import type { AppConfig, ModuleConfig } from '../types/config.ts';
 import {
   isHttpUrl,
   isValidFreeform,
@@ -110,6 +110,35 @@ export function validateConfig(value: unknown): value is AppConfig {
   }
 
   return true;
+}
+
+/** Module fields that were once documented but are no longer part of the schema. */
+const LEGACY_MODULE_KEYS = ['columns'] as const;
+
+/**
+ * Drops fields that are no longer supported so older configs converge on the
+ * current schema. Returns the original config when nothing changed, keeping
+ * reference equality for untouched configs.
+ */
+export function migrateConfig(config: AppConfig): AppConfig {
+  let changed = false;
+
+  const modules = config.modules.map((module) => {
+    const record = module as unknown as Record<string, unknown>;
+    if (!LEGACY_MODULE_KEYS.some((key) => key in record)) return module;
+
+    changed = true;
+    const next = { ...record };
+    for (const key of LEGACY_MODULE_KEYS) delete next[key];
+    return next as unknown as ModuleConfig;
+  });
+
+  return changed ? { ...config, modules } : config;
+}
+
+/** Validates and migrates an unknown value, returning `null` when invalid. */
+export function parseConfig(value: unknown): AppConfig | null {
+  return validateConfig(value) ? migrateConfig(value) : null;
 }
 
 function valuesEqual(left: unknown, right: unknown): boolean {

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { AppConfig, BackgroundConfig } from '../../types/config.ts';
-import { validateConfig } from '../../utils/configValidation.ts';
+import { parseConfig } from '../../utils/configValidation.ts';
 import { GeneralTab } from './components/GeneralTab.tsx';
 import { LinksTab } from './components/LinksTab.tsx';
 import { SubcommandsTab } from './components/SubcommandsTab.tsx';
@@ -130,12 +130,13 @@ export function ConfigEditor({
       return;
     }
 
-    if (!validateConfig(parsed)) {
+    const imported = parseConfig(parsed);
+    if (!imported) {
       setImportError('JSON does not match the expected config format.');
       return;
     }
 
-    onSave(parsed);
+    onSave(imported);
     onClose();
   };
 

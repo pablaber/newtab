@@ -27,6 +27,7 @@ All fields are optional.
 | `imageUrl` | `string` | — | URL to a background image. If empty/missing, solid color is used. |
 | `color` | `string` | `"#1a1a2e"` | Fallback background color and overlay color (also the first gradient color) |
 | `opacity` | `number` | `0.4` | Opacity of the color overlay on top of the image (0–1) |
+| `foreground` | `string` | `"auto"` | Text color: `"auto"` derives it from the background's luminance, `"light"` and `"dark"` force it |
 | `gradient` | `object` | — | Gradient settings (optional, see below) |
 
 ## `background.gradient`
@@ -48,7 +49,22 @@ Optional. If missing or `enabled: false`, no search bar is shown.
 | `enabled` | `boolean` | `false` | Whether to show the search/filter bar |
 | `placeholder` | `string` | `"Filter links..."` | Placeholder text for the input |
 
-The search bar filters links across all modules by label (case-insensitive substring match). Pressing **Escape** clears the filter. Pressing **Enter** when exactly one link matches navigates to that link.
+Both fields can be changed from **Settings → General → Search**. Turning search off keeps the configured placeholder so it is restored when search is turned back on.
+
+### Search behavior
+
+The launcher scores every link across all modules against the query and shows the five highest-scoring results, best match first. Each result is scored on three fields with different weights — label (×3), section title (×2), and URL (×1) — and each field is compared both literally and with non-alphanumeric characters stripped, so `zwift power` matches `zwiftpower`. Exact matches rank above prefix matches, which rank above substring matches; earlier matches within a field rank higher.
+
+A query with multiple words requires every word to match at least one field, and the result is scored on the average of the per-word scores. This lets `fitness strava` match a link labeled `Strava` inside a section titled `Fitness`. All comparisons are case-insensitive.
+
+Hidden links and links in hidden sections are still searchable even though they are not shown on the homepage.
+
+Keyboard behavior:
+
+- **Cmd/Ctrl+K** focuses the launcher.
+- **Arrow Up/Down** moves through results.
+- **Enter** opens the selected result, or enters the scope when the selected result is a subcommand.
+- **Escape** clears the query.
 
 When `search.enabled` is `false` but subcommands are configured, the launcher remains visible for subcommands and does not show ordinary link results.
 
@@ -60,8 +76,12 @@ Each module represents a section of links on the page.
 |---|---|---|---|
 | `type` | `string` | — | Module type (currently only `"links"`) |
 | `title` | `string` | — | Section heading |
-| `columns` | `number` | `3` | Number of columns in the link grid |
+| `hidden` | `boolean` | `false` | Hides the whole section from the homepage. Its links remain searchable. |
 | `links` | `array` | — | Array of link objects |
+
+Sections are laid out in a responsive grid that fits as many columns as the viewport allows, and the links inside a section wrap to fill the available width. The column count is not configurable.
+
+> **Removed:** `modules[].columns` was documented but never implemented. It is dropped from any config that still contains it the next time that config is loaded or imported, and no layout changes as a result.
 
 ## `modules[].links[]`
 
@@ -70,6 +90,7 @@ Each module represents a section of links on the page.
 | `url` | `string` | — | Link URL |
 | `label` | `string` | — | Display text |
 | `icon` | `string` | auto-fetched favicon | URL to an icon image. If omitted, a favicon is fetched from Google's favicon service. |
+| `hidden` | `boolean` | `false` | Hides the link from the homepage. It remains searchable. |
 
 ## `subcommands[]`
 
@@ -137,7 +158,6 @@ Example with both kinds of destination:
     {
       "type": "links",
       "title": "Favorites",
-      "columns": 3,
       "links": [
         { "url": "https://github.com", "label": "GitHub" },
         { "url": "https://news.ycombinator.com", "label": "Hacker News" },

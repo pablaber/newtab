@@ -57,7 +57,6 @@
     {
       "type": "links",
       "title": "⭐ Favorites",
-      "columns": 3,
       "links": [
         { "url": "https://github.com", "label": "GitHub" },
         { "url": "https://news.ycombinator.com", "label": "Hacker News" },
@@ -69,7 +68,6 @@
     {
       "type": "links",
       "title": "🛠️ Tools",
-      "columns": 3,
       "links": [
         { "url": "https://calendar.google.com", "label": "Google Calendar" },
         { "url": "https://notion.so", "label": "Notion" },
@@ -80,7 +78,6 @@
     {
       "type": "links",
       "title": "🔭 Discover",
-      "columns": 3,
       "links": [
         { "url": "https://tastinggrounds.com", "label": "Tasting Grounds" },
         { "url": "https://wikipedia.org", "label": "Wikipedia" },
@@ -90,7 +87,6 @@
     {
       "type": "links",
       "title": "📰 News",
-      "columns": 3,
       "links": [
         { "url": "https://techcrunch.com", "label": "TechCrunch" },
         { "url": "https://arstechnica.com", "label": "Ars Technica" },

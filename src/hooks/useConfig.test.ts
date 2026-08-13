@@ -37,6 +37,34 @@ describe('useConfig', () => {
     expect(result.current.error).toBeNull();
   });
 
+  it('migrates removed fields out of a stored config', () => {
+    const legacyConfig = {
+      ...mockConfig,
+      modules: mockConfig.modules.map((module) => ({ ...module, columns: 3 })),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(legacyConfig));
+
+    const { result } = renderHook(() => useConfig());
+
+    expect(result.current.config).toEqual(mockConfig);
+  });
+
+  it('migrates removed fields out of the fetched seed config', async () => {
+    const legacySeed = {
+      ...mockConfig,
+      modules: mockConfig.modules.map((module) => ({ ...module, columns: 3 })),
+    };
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify(legacySeed), { status: 200 }),
+    );
+
+    const { result } = renderHook(() => useConfig());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.config).toEqual(mockConfig);
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(JSON.stringify(mockConfig));
+  });
+
   it('shows the last active config while account initialization runs', async () => {
     const activeConfig: AppConfig = { ...mockConfig, version: 2 };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mockConfig));
