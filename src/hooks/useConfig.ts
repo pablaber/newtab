@@ -9,6 +9,7 @@ import {
 } from '../services/syncBackend.ts';
 
 const GUEST_STORAGE_KEY = 'newtab-config';
+const ACTIVE_STORAGE_KEY = 'newtab-active-config';
 const ACCOUNT_STORAGE_PREFIX = 'newtab-account-config:';
 
 interface AccountCache {
@@ -72,6 +73,14 @@ function saveStoredConfig(key: string, config: AppConfig): void {
   localStorage.setItem(key, JSON.stringify(config));
 }
 
+function saveActiveConfig(config: AppConfig): void {
+  try {
+    saveStoredConfig(ACTIVE_STORAGE_KEY, config);
+  } catch {
+    // The active snapshot is only a best-effort startup optimization.
+  }
+}
+
 function accountStorageKey(userId: string): string {
   return `${ACCOUNT_STORAGE_PREFIX}${userId}`;
 }
@@ -111,9 +120,12 @@ export function useConfig(options?: UseConfigOptions): UseConfigResult {
     && Object.prototype.hasOwnProperty.call(options, 'backend');
   const syncConfigured = hasBackendOverride ? options.backend !== null : isSyncAvailable;
   const [initialGuest] = useState(() => loadStoredConfig(GUEST_STORAGE_KEY));
+  const [initialConfig] = useState(
+    () => loadStoredConfig(ACTIVE_STORAGE_KEY) ?? initialGuest,
+  );
 
-  const [config, setConfigState] = useState<AppConfig | null>(initialGuest);
-  const [loading, setLoading] = useState(syncConfigured || initialGuest === null);
+  const [config, setConfigState] = useState<AppConfig | null>(initialConfig);
+  const [loading, setLoading] = useState(initialConfig === null);
   const [error, setError] = useState<string | null>(null);
   const [account, setAccount] = useState<AccountState>(
     syncConfigured ? { status: 'signed-out' } : { status: 'disabled' },
@@ -136,6 +148,7 @@ export function useConfig(options?: UseConfigOptions): UseConfigResult {
   const conflictUserRef = useRef<AccountUser | null>(null);
 
   const applyConfig = useCallback((nextConfig: AppConfig) => {
+    saveActiveConfig(nextConfig);
     setConfigState(nextConfig);
   }, []);
 
