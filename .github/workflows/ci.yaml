@@ -23,3 +23,42 @@ jobs:
       - run: npm run lint
       - run: npm run test
       - run: npm run build
+
+  audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Production dependencies must stay completely clean.
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=low
+
+      # Development dependencies are gated at high/critical. Anything
+      # knowingly accepted must be documented in docs/security.md.
+      - name: Audit all dependencies
+        run: npm audit --audit-level=high
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Simulates a developer building from a workspace that already has a
+      # local (possibly platform-specific) install. The build must ignore it.
+      - name: Seed a stale node_modules in the build context
+        run: |
+          mkdir -p node_modules/vite
+          echo 'host artifact that must never reach the builder' > node_modules/.host-artifact
+          echo '{"name":"vite","version":"0.0.0-broken"}' > node_modules/vite/package.json
+
+      - name: Build image
+        run: docker build -f docker/Dockerfile -t newtab:ci .

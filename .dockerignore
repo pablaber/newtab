@@ -1,0 +1,47 @@
+# Dependencies (platform-specific; must never overwrite the build stage install)
+node_modules
+**/node_modules
+
+# Build output
+dist
+dist-ssr
+*.local
+
+# Repository metadata
+.git
+.gitignore
+.github
+
+# Agent / editor context
+.context
+.claude
+.vscode
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Docs and non-build assets
+docs
+supabase
+CHANGELOG.md
+README.md
+AGENTS.md
+CLAUDE.md

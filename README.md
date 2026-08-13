@@ -64,6 +64,8 @@ For the full config file schema and examples, see [docs/config-file.md](docs/con
 
 Hosted deployment operators can configure optional account sync using [the sync setup guide](docs/sync-setup.md).
 
+The dependency audit policy and Docker build-context hardening are described in [docs/security.md](docs/security.md).
+
 ## Docker
 
 Build and run with Docker:
@@ -77,6 +79,8 @@ docker run -d \
 ```
 
 Then open http://localhost:3541.
+
+`.dockerignore` keeps your local `node_modules`, `dist`, and repository metadata out of the build context, so building from a working checkout is safe on any platform.
 
 ### Loading config via volume mount
 

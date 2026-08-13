@@ -43,8 +43,9 @@ src/
 └── types/
     └── config.ts          — config schema interfaces
 docker/
-├── Dockerfile             — multi-stage build
+├── Dockerfile             — multi-stage build (deps → build → nginx)
 └── nginx.conf
+.dockerignore              — keeps node_modules/dist/.git/.context out of the build context
 ```
 
 ### Screen pattern
@@ -92,4 +93,10 @@ Always run lint, tests, and build to verify changes:
 
 ```
 npm run lint && npm run test && npm run build
+```
+
+When changing dependencies, also run the audits CI enforces (see `docs/security.md`):
+
+```
+npm audit --omit=dev --audit-level=low && npm audit --audit-level=high
 ```
