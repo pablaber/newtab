@@ -1,11 +1,11 @@
 # Dependencies are installed in their own stage and copied in *after* the
 # source, so the build context can never overwrite the Linux-native install.
-FROM node:24-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY . .
 COPY --from=deps /app/node_modules ./node_modules
