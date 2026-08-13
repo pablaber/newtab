@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/pablaber/newtab/compare/v0.14.0...v0.14.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* improve favicon lookup for page urls ([#68](https://github.com/pablaber/newtab/issues/68)) ([827a0c9](https://github.com/pablaber/newtab/commit/827a0c96540376ea786f35a1fe22b3362c3a8d1f))
+
 ## [0.14.0](https://github.com/pablaber/newtab/compare/v0.13.0...v0.14.0) (2026-08-12)
 
 
