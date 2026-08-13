@@ -3,6 +3,7 @@ import { useHotkey } from '@tanstack/react-hotkeys';
 import type { AccountState } from '../../../hooks/useConfig.ts';
 import type { AppConfig, LinkConfig, ModuleConfig } from '../../../types/config.ts';
 import { ensureProtocol, MAX_LINK_LABEL, MAX_SECTION_NAME } from '../../../utils/linkConfig.ts';
+import { getFaviconUrl } from '../../../utils/favicon.ts';
 import { scoreLinkMatch } from './searchScoring.ts';
 
 type CommandId = 'add-link' | 'remove-links' | 'add-subcommand' | 'open-settings' | 'account' | 'sign-in' | 'sign-out' | 'about';
@@ -362,12 +363,7 @@ interface RemoveLinkMatch {
 
 function faviconUrl(link: LinkConfig): string {
   if (link.icon) return link.icon;
-
-  try {
-    return `https://www.google.com/s2/favicons?domain=${new URL(link.url).hostname}&sz=32`;
-  } catch {
-    return '';
-  }
+  return getFaviconUrl(link.url);
 }
 
 function RemoveLinks({ config, onSave, onClose, onBack }: RemoveLinksProps) {

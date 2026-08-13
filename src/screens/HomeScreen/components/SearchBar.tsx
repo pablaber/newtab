@@ -7,6 +7,7 @@ import type {
   SubcommandItemConfig,
 } from '../../../types/config.ts';
 import { resolveSubcommandUrl } from '../../../utils/subcommands.ts';
+import { getFaviconUrl } from '../../../utils/favicon.ts';
 import { scoreLinkMatch, scoreMatch } from './searchScoring.ts';
 
 const MAX_RESULTS = 5;
@@ -35,15 +36,6 @@ interface MatchedSubcommand extends SubcommandConfig {
 }
 
 type GlobalMatch = MatchedLink | MatchedSubcommand;
-
-function getFaviconUrl(url: string): string {
-  try {
-    const domain = new URL(url).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-  } catch {
-    return '';
-  }
-}
 
 function itemFavicon(item: SubcommandItemConfig): string {
   return item.icon || getFaviconUrl(item.url);
