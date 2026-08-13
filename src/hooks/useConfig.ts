@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AppConfig } from '../types/config.ts';
-import { configsEqual, validateConfig } from '../utils/configValidation.ts';
+import { configsEqual, parseConfig } from '../utils/configValidation.ts';
 import { isSyncAvailable } from '../env.ts';
 import {
   getSyncBackend,
@@ -62,8 +62,7 @@ function loadStoredConfig(key: string): AppConfig | null {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    return validateConfig(parsed) ? parsed : null;
+    return parseConfig(JSON.parse(raw));
   } catch {
     return null;
   }
@@ -90,11 +89,12 @@ function loadAccountCache(userId: string): AccountCache | null {
     const raw = localStorage.getItem(accountStorageKey(userId));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<AccountCache>;
-    if (!validateConfig(parsed.config)) return null;
+    const config = parseConfig(parsed.config);
+    if (!config) return null;
     if (parsed.remoteUpdatedAt !== null && typeof parsed.remoteUpdatedAt !== 'string') return null;
     if (typeof parsed.dirty !== 'boolean') return null;
     return {
-      config: parsed.config,
+      config,
       remoteUpdatedAt: parsed.remoteUpdatedAt,
       dirty: parsed.dirty,
     };
@@ -110,8 +110,8 @@ function saveAccountCache(userId: string, cache: AccountCache): void {
 async function fetchDefaultConfig(): Promise<AppConfig> {
   const response = await fetch('/config.json');
   if (!response.ok) throw new Error(`Failed to load config: ${response.status}`);
-  const data: unknown = await response.json();
-  if (!validateConfig(data)) throw new Error('The default configuration is invalid.');
+  const data = parseConfig(await response.json());
+  if (!data) throw new Error('The default configuration is invalid.');
   return data;
 }
 
@@ -222,7 +222,8 @@ export function useConfig(options?: UseConfigOptions): UseConfigResult {
         await queuePush(user.id);
         return;
       }
-      if (!validateConfig(remote.config)) {
+      const remoteConfig = parseConfig(remote.config);
+      if (!remoteConfig) {
         throw new Error('The synced configuration is invalid.');
       }
 
@@ -230,14 +231,14 @@ export function useConfig(options?: UseConfigOptions): UseConfigResult {
         || Date.parse(remote.updatedAt) > Date.parse(cache.remoteUpdatedAt);
       if (remoteIsNewer) {
         saveAccountCache(user.id, {
-          config: remote.config,
+          config: remoteConfig,
           remoteUpdatedAt: remote.updatedAt,
           dirty: false,
         });
         if (
           currentUserRef.current?.id === user.id
-          && !configsEqual(cache.config, remote.config)
-        ) applyConfig(remote.config);
+          && !configsEqual(cache.config, remoteConfig)
+        ) applyConfig(remoteConfig);
       }
 
       if (currentUserRef.current?.id === user.id) {
@@ -327,7 +328,8 @@ export function useConfig(options?: UseConfigOptions): UseConfigResult {
         await queuePush(user.id);
         return;
       }
-      if (!validateConfig(remote.config)) {
+      const remoteConfig = parseConfig(remote.config);
+      if (!remoteConfig) {
         throw new Error('The synced configuration is invalid.');
       }
 
@@ -340,16 +342,16 @@ export function useConfig(options?: UseConfigOptions): UseConfigResult {
       if (activation !== activationRef.current) return;
 
       if (
-        configsEqual(guest, remote.config)
+        configsEqual(guest, remoteConfig)
         || (defaultConfig !== null && configsEqual(guest, defaultConfig))
       ) {
         accountReadyRef.current = true;
         saveAccountCache(user.id, {
-          config: remote.config,
+          config: remoteConfig,
           remoteUpdatedAt: remote.updatedAt,
           dirty: false,
         });
-        applyConfig(remote.config);
+        applyConfig(remoteConfig);
         setLastSyncedAt(remote.updatedAt);
         setSyncStatus('synced');
       } else {
@@ -357,7 +359,7 @@ export function useConfig(options?: UseConfigOptions): UseConfigResult {
         applyConfig(guest);
         setInitialSyncConflict({
           browserConfig: guest,
-          syncedConfig: remote.config,
+          syncedConfig: remoteConfig,
           syncedUpdatedAt: remote.updatedAt,
         });
       }
