@@ -5,6 +5,7 @@ import type { SyncBackend } from '../services/syncBackend.ts';
 import type { AppConfig } from '../types/config.ts';
 
 const STORAGE_KEY = 'newtab-config';
+const ACTIVE_STORAGE_KEY = 'newtab-active-config';
 const TEST_USER = { id: 'user-123', email: 'person@example.com' };
 const FIRST_SYNC = '2026-08-12T12:00:00.000Z';
 
@@ -34,6 +35,28 @@ describe('useConfig', () => {
     expect(result.current.config).toEqual(mockConfig);
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBeNull();
+  });
+
+  it('shows the last active config while account initialization runs', async () => {
+    const activeConfig: AppConfig = { ...mockConfig, version: 2 };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockConfig));
+    localStorage.setItem(ACTIVE_STORAGE_KEY, JSON.stringify(activeConfig));
+
+    let resolveCurrentUser: ((user: null) => void) | undefined;
+    const backend = createBackend({
+      getCurrentUser: vi.fn().mockImplementation(() => new Promise<null>((resolve) => {
+        resolveCurrentUser = resolve;
+      })),
+    });
+
+    const { result } = renderHook(() => useConfig({ backend }));
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.config).toEqual(activeConfig);
+
+    act(() => resolveCurrentUser?.(null));
+    await waitFor(() => expect(result.current.config).toEqual(mockConfig));
+    expect(JSON.parse(localStorage.getItem(ACTIVE_STORAGE_KEY)!)).toEqual(mockConfig);
   });
 
   it('fetches /config.json when localStorage is empty', async () => {
@@ -137,6 +160,7 @@ describe('useConfig', () => {
     expect(result.current.config).toEqual(remoteConfig);
     expect(result.current.initialSyncConflict).toBeNull();
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual(mockConfig);
+    expect(JSON.parse(localStorage.getItem(ACTIVE_STORAGE_KEY)!)).toEqual(remoteConfig);
   });
 
   it('asks before replacing two customized first-sync configs and preserves the guest copy', async () => {
