@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.15.0](https://github.com/pablaber/newtab/compare/v0.14.1...v0.15.0) (2026-08-18)
+
+
+### Features
+
+* cache new tab startup ([#70](https://github.com/pablaber/newtab/issues/70)) ([a7cd23a](https://github.com/pablaber/newtab/commit/a7cd23a5e164679c7c9b78bb686a26e0008f64a5))
+
+
+### Bug Fixes
+
+* align config schema, editor, renderer, and documentation ([#72](https://github.com/pablaber/newtab/issues/72)) ([ca08e6f](https://github.com/pablaber/newtab/commit/ca08e6f87092bdf75d6f307ab0e543e1403994c0))
+
+
+### Miscellaneous
+
+* bump eslint-plugin-react-refresh from 0.5.3 to 0.5.4 in the dev-dependencies group across 1 directory ([#81](https://github.com/pablaber/newtab/issues/81)) ([41a9cd2](https://github.com/pablaber/newtab/commit/41a9cd286c37c74b4b54c157fd7dfbe249ef6969))
+* consolidate dependency updates ([#91](https://github.com/pablaber/newtab/issues/91)) ([1a5fc4d](https://github.com/pablaber/newtab/commit/1a5fc4d668011e6b4459af2d5eb7892ad6367e8a))
+* harden docker builds and remediate dev dependency vulnerabilities ([#73](https://github.com/pablaber/newtab/issues/73)) ([4b129e9](https://github.com/pablaber/newtab/commit/4b129e924b27b2098ed5eb62e589b2464b4d79f7))
+
 ## [0.14.1](https://github.com/pablaber/newtab/compare/v0.14.0...v0.14.1) (2026-08-13)
 
 
