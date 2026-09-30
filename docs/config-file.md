@@ -111,6 +111,7 @@ To run a subcommand, type its trigger and press **Tab**, or activate its suggest
 
 - **Enter** opens the selected predefined item.
 - A live **Open generated destination** option appears after predefined matches when the current value completes the freeform URL. Select it, or press **Enter** when it is the only result, to open it without committing with Tab first.
+- **Add destination as predefined item** appears after **Open generated destination** (live or committed) unless the URL is already in `items`. Selecting it shows a label prompt prefilled with the typed value; **Enter** saves the item to the subcommand and exits the scope, and **Escape** cancels.
 - **Tab** commits the current value to the next freeform field.
 - **Shift+Tab** returns to the previous field and selects its value.
 - **Backspace** on an empty field returns to the previous field.

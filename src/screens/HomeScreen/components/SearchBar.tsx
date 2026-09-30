@@ -23,6 +23,7 @@ interface SearchBarProps {
   modules: ModuleConfig[];
   subcommands?: SubcommandConfig[];
   onNavigate: (url: string, label: string) => void;
+  onAddSubcommandItem?: (trigger: string, item: SubcommandItemConfig) => void;
 }
 
 interface MatchedLink extends LinkConfig {
@@ -48,12 +49,14 @@ export function SearchBar({
   modules,
   subcommands = [],
   onNavigate,
+  onAddSubcommandItem,
 }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
   const [scope, setScope] = useState<SubcommandConfig | null>(null);
   const [arguments_, setArguments] = useState<string[]>([]);
+  const [pendingItem, setPendingItem] = useState<{ url: string; label: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const selectOnRenderRef = useRef(false);
@@ -128,8 +131,23 @@ export function SearchBar({
     return resolveSubcommandUrl(scope.freeform, values);
   }, [arguments_, query, scope]);
 
+  const candidate = useMemo(() => {
+    if (!scope) return null;
+    if (generatedUrl) return { url: generatedUrl, label: arguments_.join(' ') };
+    if (liveGeneratedUrl) {
+      return { url: liveGeneratedUrl, label: [...arguments_, query.trim()].join(' ') };
+    }
+    return null;
+  }, [arguments_, generatedUrl, liveGeneratedUrl, query, scope]);
+
+  const canAddItem = Boolean(
+    onAddSubcommandItem
+    && candidate
+    && !scope?.items.some((item) => item.url === candidate.url),
+  );
+
   const visibleResultCount = scope
-    ? (generatedUrl ? 1 : scopeItems.length + (liveGeneratedUrl ? 1 : 0))
+    ? (generatedUrl ? 1 : scopeItems.length + (liveGeneratedUrl ? 1 : 0)) + (canAddItem ? 1 : 0)
     : globalMatches.length;
 
   useEffect(() => {
@@ -141,7 +159,7 @@ export function SearchBar({
     if (!selectOnRenderRef.current) return;
     inputRef.current?.select();
     selectOnRenderRef.current = false;
-  }, [arguments_.length, query]);
+  }, [arguments_.length, query, pendingItem]);
 
   if (!launcherEnabled) return null;
 
@@ -150,7 +168,23 @@ export function SearchBar({
   const currentField = scope?.freeform?.fields[arguments_.length];
   const fieldSyntax = scope?.freeform?.fields.map((field) => `<${field.name}>`).join(' ');
 
+  function startAddItem() {
+    if (!candidate) return;
+    setPendingItem(candidate);
+    selectOnRenderRef.current = true;
+    inputRef.current?.focus();
+  }
+
+  function saveAddItem() {
+    if (!scope || !pendingItem || !onAddSubcommandItem) return;
+    const label = pendingItem.label.trim();
+    if (!label) return;
+    onAddSubcommandItem(scope.trigger, { label, url: pendingItem.url });
+    exitScope();
+  }
+
   function activateScope(subcommand: SubcommandConfig) {
+    setPendingItem(null);
     setScope(subcommand);
     setArguments([]);
     setQuery('');
@@ -159,6 +193,7 @@ export function SearchBar({
   }
 
   function exitScope() {
+    setPendingItem(null);
     setScope(null);
     setArguments([]);
     setQuery('');
@@ -176,6 +211,19 @@ export function SearchBar({
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (pendingItem) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        saveAddItem();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        setPendingItem(null);
+      } else if (['Tab', 'ArrowDown', 'ArrowUp'].includes(event.key)) {
+        event.preventDefault();
+      }
+      return;
+    }
+
     if (event.key === 'Escape') {
       event.preventDefault();
       if (query) setQuery('');
@@ -226,12 +274,16 @@ export function SearchBar({
     if (event.key !== 'Enter') return;
 
     if (scope) {
-      if (generatedUrl) onNavigate(generatedUrl, scope.name);
-      else if (scopeItems[selectedIndex]) {
+      if (generatedUrl) {
+        if (selectedIndex === 0) onNavigate(generatedUrl, scope.name);
+        else if (canAddItem && selectedIndex === 1) startAddItem();
+      } else if (scopeItems[selectedIndex]) {
         const item = scopeItems[selectedIndex];
         onNavigate(item.url, item.label);
       } else if (liveGeneratedUrl && selectedIndex === scopeItems.length) {
         onNavigate(liveGeneratedUrl, scope.name);
+      } else if (canAddItem && selectedIndex === scopeItems.length + 1) {
+        startAddItem();
       }
       return;
     }
@@ -240,6 +292,27 @@ export function SearchBar({
     if (!match) return;
     if (match.kind === 'subcommand') activateScope(match);
     else onNavigate(match.url, match.label);
+  }
+
+  function addRow(url: string, index: number) {
+    return (
+      <li>
+        <a
+          className={`search-dropdown-item search-generated-item${selectedIndex === index ? ' selected' : ''}`}
+          href={url}
+          onClick={(event) => {
+            event.preventDefault();
+            startAddItem();
+          }}
+        >
+          <span className="search-dropdown-left">
+            <span className="search-subcommand-icon" aria-hidden="true">+</span>
+            <span className="search-dropdown-label">Add destination as predefined item</span>
+          </span>
+          <span className="search-generated-url">{url}</span>
+        </a>
+      </li>
+    );
   }
 
   return (
@@ -267,19 +340,25 @@ export function SearchBar({
             ref={inputRef}
             className={`search-bar${kbdHidden ? '' : ' search-bar--has-kbd'}`}
             type="text"
-            aria-label={scope ? `${scope.name} ${currentField?.name ?? 'destination'}` : undefined}
-            placeholder={scope
+            aria-label={scope
+              ? (pendingItem ? `${scope.name} item label` : `${scope.name} ${currentField?.name ?? 'destination'}`)
+              : undefined}
+            placeholder={pendingItem ? 'Item label' : scope
               ? (generatedUrl ? 'Press Enter to open' : currentField ? `<${currentField.name}>` : 'Filter items...')
               : enabled ? placeholder : 'Run a subcommand...'}
-            value={query}
+            value={pendingItem ? pendingItem.label : query}
             onChange={(event) => {
+              if (pendingItem) {
+                setPendingItem({ ...pendingItem, label: event.target.value });
+                return;
+              }
               setQuery(event.target.value);
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            readOnly={Boolean(generatedUrl)}
+            readOnly={Boolean(generatedUrl) && !pendingItem}
             autoFocus
           />
           <kbd className={`search-bar-kbd${kbdHidden ? ' search-bar-kbd--hidden' : ''}`} aria-hidden="true">
@@ -291,7 +370,7 @@ export function SearchBar({
           <div className="search-scope-syntax">
             <span>{scope.name}</span>
             <code>{fieldSyntax}</code>
-            <span>Tab to commit</span>
+            <span>{pendingItem ? 'Enter to save · Esc to cancel' : 'Tab to commit'}</span>
           </div>
         )}
 
@@ -324,12 +403,34 @@ export function SearchBar({
           </ul>
         )}
 
-        {scope && (generatedUrl || liveGeneratedUrl || scopeItems.length > 0) && (
+        {scope && pendingItem && (
+          <ul className="search-dropdown" ref={listRef}>
+            <li>
+              <a
+                className="search-dropdown-item selected search-generated-item"
+                href={pendingItem.url}
+                onClick={(event) => {
+                  event.preventDefault();
+                  saveAddItem();
+                }}
+              >
+                <span className="search-dropdown-left">
+                  <span className="search-subcommand-icon" aria-hidden="true">+</span>
+                  <span className="search-dropdown-label">Save "{pendingItem.label.trim()}" to {scope.name}</span>
+                </span>
+                <span className="search-generated-url">{pendingItem.url}</span>
+              </a>
+            </li>
+          </ul>
+        )}
+
+        {scope && !pendingItem && (generatedUrl || liveGeneratedUrl || scopeItems.length > 0) && (
           <ul className="search-dropdown" ref={listRef}>
             {generatedUrl ? (
+              <>
               <li>
                 <a
-                  className="search-dropdown-item selected search-generated-item"
+                  className={`search-dropdown-item search-generated-item${selectedIndex === 0 ? ' selected' : ''}`}
                   href={generatedUrl}
                   onClick={(event) => {
                     event.preventDefault();
@@ -343,6 +444,8 @@ export function SearchBar({
                   <span className="search-generated-url">{generatedUrl}</span>
                 </a>
               </li>
+              {canAddItem && addRow(generatedUrl, 1)}
+              </>
             ) : (
               <>
                 {scopeItems.map((item, index) => (
@@ -383,6 +486,7 @@ export function SearchBar({
                     </a>
                   </li>
                 )}
+                {canAddItem && liveGeneratedUrl && addRow(liveGeneratedUrl, scopeItems.length + 1)}
               </>
             )}
           </ul>

@@ -396,6 +396,84 @@ describe('SearchBar', () => {
     expect(onNavigate).toHaveBeenCalledWith('https://github.com/pablaber/new', 'GitHub Project');
   });
 
+  describe('add destination as predefined item', () => {
+    async function openCommitted(onAdd?: ReturnType<typeof vi.fn>, value = 'brand') {
+      const user = userEvent.setup();
+      render(
+        <SearchBar
+          enabled
+          placeholder="Filter..."
+          modules={[]}
+          subcommands={mockSubcommands}
+          onNavigate={vi.fn()}
+          onAddSubcommandItem={onAdd}
+        />,
+      );
+      await user.type(screen.getByPlaceholderText('Filter...'), 'ghp');
+      await user.keyboard('{Tab}');
+      await user.type(screen.getByPlaceholderText('<repo>'), value);
+      return user;
+    }
+
+    it('saves the committed destination with an edited label and exits the scope', async () => {
+      const onAdd = vi.fn();
+      const user = await openCommitted(onAdd);
+      await user.keyboard('{Tab}');
+      const rows = screen.getAllByRole('link');
+      expect(rows).toHaveLength(2);
+      expect(rows[1]).toHaveTextContent('Add destination as predefined item');
+
+      await user.keyboard('{ArrowDown}{Enter}');
+      const input = screen.getByRole('textbox', { name: 'GitHub Project item label' });
+      expect(input).toHaveValue('brand');
+      await user.clear(input);
+      await user.type(input, 'Brand Repo');
+      expect(screen.getByText('Enter to save · Esc to cancel')).toBeInTheDocument();
+      await user.keyboard('{Enter}');
+
+      expect(onAdd).toHaveBeenCalledWith('ghp', {
+        label: 'Brand Repo',
+        url: 'https://github.com/pablaber/brand',
+      });
+      expect(screen.queryByRole('button', { name: 'Exit GitHub Project subcommand' })).not.toBeInTheDocument();
+    });
+
+    it('shows the add row after the open row in the live state', async () => {
+      const onAdd = vi.fn();
+      const user = await openCommitted(onAdd, 'brand');
+      const rows = screen.getAllByRole('link');
+      expect(rows[0]).toHaveTextContent('Open generated destination');
+      expect(rows[1]).toHaveTextContent('Add destination as predefined item');
+
+      await user.click(rows[1]);
+      expect(screen.getByRole('textbox', { name: 'GitHub Project item label' })).toHaveValue('brand');
+    });
+
+    it('cancels with Escape and does not save an empty label', async () => {
+      const onAdd = vi.fn();
+      const user = await openCommitted(onAdd);
+      await user.click(screen.getAllByRole('link')[1]);
+      const input = screen.getByRole('textbox', { name: 'GitHub Project item label' });
+      await user.clear(input);
+      await user.keyboard('{Enter}');
+      expect(onAdd).not.toHaveBeenCalled();
+
+      await user.keyboard('{Escape}');
+      expect(screen.getByPlaceholderText('<repo>')).toHaveValue('brand');
+      expect(screen.getByRole('button', { name: 'Exit GitHub Project subcommand' })).toBeInTheDocument();
+    });
+
+    it('hides the row when the URL exists or no callback is passed', async () => {
+      await openCommitted(vi.fn(), 'newtab');
+      expect(screen.queryByText('Add destination as predefined item')).not.toBeInTheDocument();
+    });
+
+    it('hides the row without a callback', async () => {
+      await openCommitted(undefined);
+      expect(screen.queryByText('Add destination as predefined item')).not.toBeInTheDocument();
+    });
+  });
+
   it('opens the only live freeform destination with Enter without requiring Tab', async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();

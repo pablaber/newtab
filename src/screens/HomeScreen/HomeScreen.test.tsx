@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HomeScreen } from './HomeScreen.tsx';
-import { mockConfig, mockHiddenModule } from '../../test/fixtures.ts';
+import { mockConfig, mockHiddenModule, mockSubcommands } from '../../test/fixtures.ts';
 
 vi.mock('../../env.ts', () => ({ isHosted: false }));
 
@@ -220,5 +220,25 @@ describe('HomeScreen', () => {
       expect(link).toHaveAttribute('href', 'https://buymeacoffee.com/pablaber');
       expect(link).toHaveAttribute('target', '_blank');
     });
+  });
+
+  it('saves a generated destination as a predefined item on the matching subcommand', async () => {
+    const user = userEvent.setup();
+    const onSaveConfig = vi.fn();
+    const config = { ...mockConfig, subcommands: mockSubcommands };
+    render(<HomeScreen config={config} onSaveConfig={onSaveConfig} onOpenSettings={vi.fn()} />);
+
+    await user.type(screen.getByPlaceholderText('Filter links...'), 'ghp');
+    await user.keyboard('{Tab}');
+    await user.type(screen.getByPlaceholderText('<repo>'), 'brand');
+    await user.click(screen.getByText('Add destination as predefined item'));
+    await user.keyboard('{Enter}');
+
+    const saved = onSaveConfig.mock.calls[0][0];
+    expect(saved.subcommands[0].items).toEqual([
+      ...mockSubcommands[0].items,
+      { label: 'brand', url: 'https://github.com/pablaber/brand' },
+    ]);
+    expect(saved.subcommands[1]).toEqual(mockSubcommands[1]);
   });
 });
