@@ -104,7 +104,6 @@ type CategoryOption =
   | { type: 'existing'; id: string; index: number; module: ModuleConfig }
   | { type: 'create'; id: string; title: string };
 
-const MAX_CATEGORY_RESULTS = 3;
 const MAX_REMOVE_RESULTS = 5;
 
 function AddLinkForm({ config, onSave, onClose, onBack }: AddLinkFormProps) {
@@ -140,7 +139,6 @@ function AddLinkForm({ config, onSave, onClose, onBack }: AddLinkFormProps) {
       })
       .filter(({ score }) => score >= 0)
       .sort((a, b) => b.score - a.score || a.index - b.index)
-      .slice(0, MAX_CATEGORY_RESULTS)
       .map(({ id, index, module, type }) => ({ id, index, module, type }));
 
     const hasExactMatch = normalized !== '' && config.modules.some(
@@ -151,6 +149,12 @@ function AddLinkForm({ config, onSave, onClose, onBack }: AddLinkFormProps) {
       ? [...matchingModules, { type: 'create', id: 'create', title: category.trim() }]
       : matchingModules;
   }, [category, config.modules]);
+
+  useEffect(() => {
+    if (!showCategories || activeCategoryIndex < 0) return;
+    const id = `${categoryListId}-${categoryOptions[activeCategoryIndex]?.id}`;
+    document.getElementById(id)?.scrollIntoView?.({ block: 'nearest' });
+  }, [showCategories, activeCategoryIndex, categoryOptions, categoryListId]);
 
   const trimmedCategory = category.trim();
   const exactModuleIndex = config.modules.findIndex(
