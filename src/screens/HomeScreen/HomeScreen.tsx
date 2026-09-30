@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useHotkey } from '@tanstack/react-hotkeys';
-import type { AppConfig } from '../../types/config.ts';
+import type { AppConfig, SubcommandItemConfig } from '../../types/config.ts';
 import type { AccountState, SyncStatus } from '../../hooks/useConfig.ts';
 import { isHosted } from '../../env.ts';
 import { getFaviconUrl } from '../../utils/favicon.ts';
@@ -45,6 +45,17 @@ export function HomeScreen({
     setNavigating({ url, label });
     window.location.href = url;
   }, []);
+
+  const handleAddSubcommandItem = useCallback((trigger: string, item: SubcommandItemConfig) => {
+    onSaveConfig({
+      ...config,
+      subcommands: config.subcommands?.map((subcommand) => (
+        subcommand.trigger === trigger
+          ? { ...subcommand, items: [...subcommand.items, item] }
+          : subcommand
+      )),
+    });
+  }, [config, onSaveConfig]);
 
   const hasVisibleModules = useMemo(
     () => config.modules.some((m) => !m.hidden),
@@ -108,6 +119,7 @@ export function HomeScreen({
           modules={config.modules}
           subcommands={config.subcommands}
           onNavigate={handleNavigate}
+          onAddSubcommandItem={handleAddSubcommandItem}
         />
         {hasVisibleModules ? (
           <ModuleGrid modules={config.modules} onNavigate={handleNavigate} />
