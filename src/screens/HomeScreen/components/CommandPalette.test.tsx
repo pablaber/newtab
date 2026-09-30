@@ -295,7 +295,7 @@ describe('CommandPalette', () => {
     expect(saved.modules[0].hidden).toBeUndefined();
   });
 
-  it('shows the top three matching categories followed by an explicit create option', async () => {
+  it('shows all matching categories followed by an explicit create option', async () => {
     const user = userEvent.setup();
     const config: AppConfig = {
       ...mockConfig,
@@ -311,14 +311,14 @@ describe('CommandPalette', () => {
     await user.type(screen.getByLabelText('Folder / category'), 'wo');
     const options = screen.getAllByRole('option');
 
-    expect(options).toHaveLength(4);
-    expect(options.slice(0, 3).map((option) => option.textContent)).toEqual([
+    expect(options).toHaveLength(5);
+    expect(options.slice(0, 4).map((option) => option.textContent)).toEqual([
       'Work',
       'Workshop',
       'Wow',
+      'Homework',
     ]);
-    expect(options[3]).toHaveTextContent('Create new category “wo”');
-    expect(screen.queryByRole('option', { name: 'Homework' })).not.toBeInTheDocument();
+    expect(options[4]).toHaveTextContent('Create new category “wo”');
   });
 
   it('requires choosing the create option for an unmatched category', async () => {
