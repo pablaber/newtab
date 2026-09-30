@@ -166,6 +166,9 @@ export function SearchBar({
   const kbdHidden = isFocused || query.length > 0 || scope !== null;
   const kbdLabel = isMac() ? '⌘K' : 'Ctrl K';
   const currentField = scope?.freeform?.fields[arguments_.length];
+  const displayedArguments = pendingItem && !generatedUrl && liveGeneratedUrl
+    ? [...arguments_, query.trim()]
+    : arguments_;
   const fieldSyntax = scope?.freeform?.fields.map((field) => `<${field.name}>`).join(' ');
 
   function startAddItem() {
@@ -330,7 +333,7 @@ export function SearchBar({
               <span aria-hidden="true">×</span>
             </button>
           )}
-          {scope?.freeform && arguments_.map((value, index) => (
+          {scope?.freeform && displayedArguments.map((value, index) => (
             <span className="search-argument-chip" key={`${scope.freeform?.fields[index].name}-${index}`}>
               <small>{scope.freeform?.fields[index].name}</small>
               {value}

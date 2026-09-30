@@ -449,6 +449,16 @@ describe('SearchBar', () => {
       expect(screen.getByRole('textbox', { name: 'GitHub Project item label' })).toHaveValue('brand');
     });
 
+    it('keeps the in-progress value visible as a chip while labelling', async () => {
+      const user = await openCommitted(vi.fn(), 'brand');
+      await user.keyboard('{ArrowDown}{Enter}');
+      expect(screen.getByText('repo')).toBeInTheDocument();
+      expect(screen.getByText('brand')).toBeInTheDocument();
+
+      await user.keyboard('{Escape}');
+      expect(screen.getByPlaceholderText('<repo>')).toHaveValue('brand');
+    });
+
     it('cancels with Escape and does not save an empty label', async () => {
       const onAdd = vi.fn();
       const user = await openCommitted(onAdd);
