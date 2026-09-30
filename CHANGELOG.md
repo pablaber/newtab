@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.16.0](https://github.com/pablaber/newtab/compare/v0.15.0...v0.16.0) (2026-09-30)
+
+
+### Features
+
+* save freeform subcommand destinations as predefined items ([#106](https://github.com/pablaber/newtab/issues/106)) ([80e3f26](https://github.com/pablaber/newtab/commit/80e3f26b2eedb02ceb5cac6240b48c2e8a8e6214))
+
+
+### Miscellaneous
+
+* bump @eslint/js from 9.39.5 to 10.0.1 ([#98](https://github.com/pablaber/newtab/issues/98)) ([ffebe76](https://github.com/pablaber/newtab/commit/ffebe760ddf9aec0f24f018ae07fe479b5a37486))
+* bump actions/setup-node from 4 to 7 ([#94](https://github.com/pablaber/newtab/issues/94)) ([39af466](https://github.com/pablaber/newtab/commit/39af466ca5ad27cf0de3752e0818f25693cd9f34))
+* bump docker/build-push-action from 6 to 7 ([#97](https://github.com/pablaber/newtab/issues/97)) ([73c44c3](https://github.com/pablaber/newtab/commit/73c44c30bae184b325e981169a465d911fa2bfd8))
+* bump docker/setup-buildx-action from 3 to 4 ([#95](https://github.com/pablaber/newtab/issues/95)) ([ad3a542](https://github.com/pablaber/newtab/commit/ad3a54244e896cdb42844f9f1bfca83e772e1cf3))
+* bump docker/setup-qemu-action from 3 to 4 ([#92](https://github.com/pablaber/newtab/issues/92)) ([a084257](https://github.com/pablaber/newtab/commit/a084257280727a6024acbf9ac16625f12f4acbb4))
+* bump googleapis/release-please-action from 4 to 5 ([#93](https://github.com/pablaber/newtab/issues/93)) ([18d8dc9](https://github.com/pablaber/newtab/commit/18d8dc98ea5f36fc86172f8e1e41c0b3010b2126))
+* bump the dev-dependencies group across 1 directory with 10 updates ([#105](https://github.com/pablaber/newtab/issues/105)) ([c2edb4b](https://github.com/pablaber/newtab/commit/c2edb4b67d5ea731e45c629a08229eef6413735e))
+* bump the production-dependencies group across 1 directory with 4 updates ([#108](https://github.com/pablaber/newtab/issues/108)) ([4cb30b9](https://github.com/pablaber/newtab/commit/4cb30b95eafc6a7695a4c35cb739e4f82ce02025))
+
 ## [0.15.0](https://github.com/pablaber/newtab/compare/v0.14.1...v0.15.0) (2026-08-18)
 
 
