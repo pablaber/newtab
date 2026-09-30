@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/pablaber/newtab/compare/v0.16.0...v0.17.0) (2026-09-30)
+
+
+### Features
+
+* make add-link category suggestions scrollable ([#109](https://github.com/pablaber/newtab/issues/109)) ([f79d37c](https://github.com/pablaber/newtab/commit/f79d37cfbf731c8d9e7807ad90ec243f0061d1b1))
+
 ## [0.16.0](https://github.com/pablaber/newtab/compare/v0.15.0...v0.16.0) (2026-09-30)
 
 
