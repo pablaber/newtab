@@ -1833,3 +1833,72 @@
     align-self: flex-start;
   }
 }
+
+/* Admin Modal */
+.admin-modal-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.admin-modal-form .config-editor-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-modal-success {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: rgba(var(--fg), 0.7);
+}
+
+.admin-modal-subtitle {
+  margin: 20px 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--fg), 0.5);
+}
+
+.admin-modal-empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(var(--fg), 0.5);
+}
+
+.admin-modal-list {
+  max-height: 240px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.admin-modal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: background 150ms;
+}
+
+.admin-modal-item:hover {
+  background: rgba(var(--fg), 0.05);
+}
+
+.admin-modal-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgb(var(--fg));
+}
+
+.admin-modal-date {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: rgba(var(--fg), 0.5);
+}

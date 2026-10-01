@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HomeScreen } from './HomeScreen.tsx';
-import { mockConfig, mockHiddenModule, mockSubcommands } from '../../test/fixtures.ts';
+import { mockConfig, mockHiddenModule, mockInvites, mockSubcommands } from '../../test/fixtures.ts';
 
 vi.mock('../../env.ts', () => ({ isHosted: false }));
 
@@ -32,6 +32,26 @@ describe('HomeScreen', () => {
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
     expect(screen.queryByText(/clean, customizable new tab page/)).not.toBeInTheDocument();
+  });
+
+  it('hides the invite button for non-admins', () => {
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} />);
+    expect(screen.queryByLabelText('Invite users')).not.toBeInTheDocument();
+  });
+
+  it('opens the invite modal for admins', async () => {
+    const user = userEvent.setup();
+    const admin = {
+      listInvites: vi.fn().mockResolvedValue(mockInvites),
+      inviteUser: vi.fn(),
+    };
+    render(
+      <HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} admin={admin} />,
+    );
+
+    await user.click(screen.getByLabelText('Invite users'));
+    expect(screen.getByRole('heading', { name: 'Invite users' })).toBeInTheDocument();
+    expect(await screen.findByText('newest@example.com')).toBeInTheDocument();
   });
 
   it('calls onOpenSettings when settings button is clicked', async () => {

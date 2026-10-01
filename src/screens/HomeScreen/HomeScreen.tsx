@@ -2,11 +2,13 @@ import { useState, useCallback, useMemo } from 'react';
 import { useHotkey } from '@tanstack/react-hotkeys';
 import type { AppConfig, SubcommandItemConfig } from '../../types/config.ts';
 import type { AccountState, SyncStatus } from '../../hooks/useConfig.ts';
+import type { AdminActions } from '../../hooks/useAdmin.ts';
 import { isHosted } from '../../env.ts';
 import { getFaviconUrl } from '../../utils/favicon.ts';
 import { SearchBar } from './components/SearchBar.tsx';
 import { ModuleGrid } from './components/ModuleGrid.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
+import { AdminModal } from './components/AdminModal.tsx';
 import { CommandPalette } from './components/CommandPalette.tsx';
 
 interface HomeScreenProps {
@@ -18,6 +20,7 @@ interface HomeScreenProps {
   syncStatus?: SyncStatus;
   onOpenAccount?: () => void;
   onSignOut?: () => void | Promise<void>;
+  admin?: AdminActions;
 }
 
 export function HomeScreen({
@@ -29,13 +32,16 @@ export function HomeScreen({
   syncStatus = 'local',
   onOpenAccount,
   onSignOut,
+  admin,
 }: HomeScreenProps) {
   const [navigating, setNavigating] = useState<{ url: string; label: string } | null>(null);
   const [showAbout, setShowAbout] = useState(false);
   const [showCommands, setShowCommands] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   const openCommands = useCallback(() => {
     setShowAbout(false);
+    setShowAdmin(false);
     setShowCommands(true);
   }, []);
 
@@ -97,6 +103,16 @@ export function HomeScreen({
             {syncStatus === 'error' && <span className="account-button-indicator" />}
           </button>
         )}
+        {admin && (
+          <button className="config-button" tabIndex={-1} onClick={() => setShowAdmin(true)} aria-label="Invite users">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <line x1="19" y1="8" x2="19" y2="14" />
+              <line x1="22" y1="11" x2="16" y2="11" />
+            </svg>
+          </button>
+        )}
         <button className="config-button" tabIndex={-1} onClick={() => setShowAbout(true)} aria-label="About">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10" />
@@ -114,7 +130,7 @@ export function HomeScreen({
       <div className="content">
         <SearchBar
           enabled={config.search?.enabled ?? false}
-          hotkeyEnabled={!showCommands && !showAbout}
+          hotkeyEnabled={!showCommands && !showAbout && !showAdmin}
           placeholder={config.search?.placeholder ?? 'Filter links...'}
           modules={config.modules}
           subcommands={config.subcommands}
@@ -146,6 +162,7 @@ export function HomeScreen({
         </footer>
       )}
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
+      {showAdmin && admin && <AdminModal admin={admin} onClose={() => setShowAdmin(false)} />}
       {showCommands && (
         <CommandPalette
           config={config}

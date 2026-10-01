@@ -33,6 +33,20 @@ values ('person@example.com');
 
 Removing an allowlist row does not revoke an existing account. To revoke access, ban or delete the user from **Authentication → Users**.
 
+### Super admins
+
+Super admins see an **Invite users** button on the home screen. It adds emails to `public.sync_beta_allowlist` through the `invite_sync_beta_user` RPC and lists existing invites. No email is sent; tell the invitee they can sign in. Removing an invite still requires SQL.
+
+The flag lives in `public.user_profiles` and can only be set with SQL. The user must have signed in at least once:
+
+```sql
+insert into public.user_profiles (user_id, is_super_admin)
+select id, true from auth.users where email = 'admin@example.com'
+on conflict (user_id) do update set is_super_admin = true;
+```
+
+To remove the flag, set `is_super_admin = false` for that row. The invite RPCs check the flag on every call, so changes take effect immediately.
+
 ## 4. Deploy the hosted build
 
 Set these build-time variables in the hosted deployment:
@@ -109,3 +123,4 @@ The service stores the account email in Supabase Auth, the allowlisted email in 
 3. Disconnect one browser, save locally, reconnect, and retry sync.
 4. Sign out and confirm the browser's original guest config returns.
 5. Use two test users to confirm neither can select or update the other's `user_configs` row.
+6. Confirm a non-admin does not see **Invite users**, and that calling `invite_sync_beta_user` directly returns a permission error.

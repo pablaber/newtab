@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useConfig } from './hooks/useConfig.ts';
+import { useAdmin } from './hooks/useAdmin.ts';
 import type { BackgroundConfig } from './types/config.ts';
 import { BackgroundLayer } from './components/BackgroundLayer.tsx';
 import { SyncConflictModal } from './components/SyncConflictModal.tsx';
@@ -26,6 +27,11 @@ function App() {
     resolveInitialSync,
     setEditorOpen,
   } = useConfig();
+  const { isSuperAdmin, listInvites, inviteUser } = useAdmin(account);
+  const admin = useMemo(
+    () => (isSuperAdmin ? { listInvites, inviteUser } : undefined),
+    [inviteUser, isSuperAdmin, listInvites],
+  );
   const [showConfig, setShowConfig] = useState(false);
   const [configTab, setConfigTab] = useState<ConfigEditorTab>('general');
   const [stageNewSubcommand, setStageNewSubcommand] = useState(false);
@@ -116,6 +122,7 @@ function App() {
         syncStatus={syncStatus}
         onOpenAccount={account.status === 'disabled' ? undefined : () => openSettings('account')}
         onSignOut={account.status === 'signed-in' ? signOut : undefined}
+        admin={admin}
       />
       {initialSyncConflict && (
         <SyncConflictModal
