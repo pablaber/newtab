@@ -1,4 +1,5 @@
 import type { AppConfig, ModuleConfig, LinkConfig, BackgroundConfig, SubcommandConfig } from '../types/config.ts';
+import type { BetaInvite } from '../services/syncBackend.ts';
 
 export const mockLink: LinkConfig = {
   url: 'https://github.com',
@@ -103,4 +104,9 @@ export const mockSubcommands: SubcommandConfig[] = [
       urlTemplate: 'https://github.com/{account}/{repo}',
     },
   },
+];
+
+export const mockInvites: BetaInvite[] = [
+  { email: 'newest@example.com', createdAt: '2026-09-30T12:00:00.000Z' },
+  { email: 'older@example.com', createdAt: '2026-09-01T12:00:00.000Z' },
 ];

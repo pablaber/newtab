@@ -18,6 +18,9 @@ function createBackend(overrides: Partial<SyncBackend> = {}): SyncBackend {
     signOut: vi.fn().mockResolvedValue(undefined),
     getConfig: vi.fn().mockResolvedValue(null),
     saveConfig: vi.fn().mockResolvedValue(FIRST_SYNC),
+    isSuperAdmin: vi.fn().mockResolvedValue(false),
+    listInvites: vi.fn().mockResolvedValue([]),
+    inviteUser: vi.fn(),
     ...overrides,
   };
 }

@@ -22,6 +22,7 @@ src/
 │   │   ├── index.ts
 │   │   ├── HomeScreen.tsx         — navigation, command, and modal state; composes children
 │   │   └── components/
+│   │       ├── AdminModal.tsx     — super-admin invite form and invite list
 │   │       ├── CommandPalette.tsx — searchable commands and command-specific forms
 │   │       ├── SearchBar.tsx
 │   │       ├── ModuleGrid.tsx
@@ -34,6 +35,7 @@ src/
 │           ├── GeneralTab.tsx    — general settings (background + search placeholder)
 │           └── LinksTab.tsx      — section + link CRUD with reordering & validation
 ├── hooks/
+│   ├── useAdmin.ts        — super-admin status and invite actions
 │   └── useConfig.ts       — fetches /config.json, persists to localStorage
 ├── utils/
 │   ├── linkConfig.ts     — shared link constraints and URL normalization
