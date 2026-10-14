@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.18.0](https://github.com/pablaber/newtab/compare/v0.17.0...v0.18.0) (2026-10-14)
+
+
+### Features
+
+* add super admin invite modal ([#113](https://github.com/pablaber/newtab/issues/113)) ([80c665a](https://github.com/pablaber/newtab/commit/80c665ab83b4bbb2690881e45db9969a7e0cb748))
+* learn local search preferences ([#117](https://github.com/pablaber/newtab/issues/117)) ([dbf82dd](https://github.com/pablaber/newtab/commit/dbf82dd99b3f5995f3d5dc7c26cb9741e4c95beb))
+
 ## [0.17.0](https://github.com/pablaber/newtab/compare/v0.16.0...v0.17.0) (2026-09-30)
 
 
