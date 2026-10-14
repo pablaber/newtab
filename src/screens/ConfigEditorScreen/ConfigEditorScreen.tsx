@@ -29,6 +29,7 @@ interface ConfigEditorProps {
   initialTab?: ConfigEditorTab;
   accountControls?: AccountTabProps;
   stageNewSubcommand?: boolean;
+  onResetSearchHistory?: () => boolean;
 }
 
 export function ConfigEditor({
@@ -39,6 +40,7 @@ export function ConfigEditor({
   initialTab = 'general',
   accountControls,
   stageNewSubcommand = false,
+  onResetSearchHistory,
 }: ConfigEditorProps) {
   const [tab, setTab] = useState<ConfigEditorTab>(
     initialTab === 'account' && !accountControls ? 'general' : initialTab,
@@ -199,6 +201,7 @@ export function ConfigEditor({
       {tab === 'general' && (
         <GeneralTab
           config={draftConfig}
+          onResetSearchHistory={onResetSearchHistory}
           onSave={handleSave}
           onClose={onClose}
           onPreview={onPreview}

@@ -232,4 +232,15 @@ describe('GeneralTab', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+  it('announces a session-only reset when browser persistence fails, independently of settings saves', async () => {
+    const user = userEvent.setup();
+    const onResetSearchHistory = vi.fn(() => false);
+    render(<GeneralTab {...defaultProps} onResetSearchHistory={onResetSearchHistory} />);
+    await user.click(screen.getByRole('button', { name: 'Reset learned search preferences' }));
+    expect(onResetSearchHistory).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('status')).toHaveTextContent('Learned search preferences reset for this session. Browser storage is unavailable.');
+    expect(defaultProps.onSave).not.toHaveBeenCalled();
+    expect(defaultProps.onClose).not.toHaveBeenCalled();
+  });
+
 });

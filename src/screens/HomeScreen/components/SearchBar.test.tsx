@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HotkeysProvider } from '@tanstack/react-hotkeys';
+import { recordSearchSelection } from '../../../utils/searchHistory.ts';
 import { SearchBar } from './SearchBar.tsx';
 import { scoreMatch, scoreLinkMatch } from './searchScoring.ts';
 import { mockModule, mockModuleWithHiddenLinks, mockSubcommands } from '../../../test/fixtures.ts';
@@ -551,5 +552,139 @@ describe('SearchBar', () => {
     await user.keyboard('{Tab}');
     await user.click(screen.getByRole('button', { name: 'Exit GitHub subcommand' }));
     expect(screen.getByPlaceholderText('Filter...')).toHaveValue('');
+  });
+});
+
+describe('learned ordinary search preferences', () => {
+  const now = Date.UTC(2026, 9, 14);
+  const helpUrl = 'https://a.test/2';
+  const preferenceModules: ModuleConfig[] = [{
+    type: 'links', title: 'Tools', links: [
+      { label: 'helpful resources', url: 'https://a.test/1' },
+      { label: 'website - help page', url: helpUrl },
+    ],
+  }];
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('preserves baseline ordering, promotes repeated choices, and fades back on subsequent input', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(now);
+    let history = recordSearchSelection([], 'hel', helpUrl, now);
+    const props = { enabled: true, placeholder: 'Filter...', modules: preferenceModules, onNavigate: vi.fn() };
+    const { rerender } = render(<SearchBar {...props} />);
+    const input = screen.getByPlaceholderText('Filter...');
+    fireEvent.change(input, { target: { value: 'hel' } });
+    expect(screen.getAllByRole('link')[0]).toHaveTextContent('helpful resources');
+    rerender(<SearchBar {...props} searchHistory={history} />);
+    expect(screen.getAllByRole('link')[0]).toHaveTextContent('helpful resources');
+    history = recordSearchSelection(history, 'hel', helpUrl, now);
+    rerender(<SearchBar {...props} searchHistory={history} />);
+    expect(screen.getAllByRole('link')[0]).toHaveTextContent('website - help page');
+    vi.mocked(Date.now).mockReturnValue(now + 60 * 24 * 60 * 60 * 1000);
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    // No timer or keyboard highlight rerender may change the selected result's ordering.
+    expect(screen.getAllByRole('link')[0]).toHaveTextContent('website - help page');
+    expect(screen.getAllByRole('link')[1]).toHaveClass('selected');
+    fireEvent.change(input, { target: { value: ' hel ' } });
+    expect(screen.getAllByRole('link')[0]).toHaveTextContent('helpful resources');
+  });
+
+  it('lets a recent competing selection overtake an older preference in displayed ranking', () => {
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(now);
+    const oldUrl = 'https://a.test/old';
+    const recentUrl = 'https://a.test/recent';
+    const modules: ModuleConfig[] = [{ type: 'links', title: 'Tools', links: [
+      { label: 'Help page', url: oldUrl }, { label: 'Help page', url: recentUrl },
+    ] }];
+    let history = recordSearchSelection([], 'hel', oldUrl, now);
+    for (let index = 0; index < 5; index++) history = recordSearchSelection(history, 'hel', oldUrl, now);
+    const props = { enabled: true, placeholder: 'Filter...', modules, onNavigate: vi.fn() };
+    const { rerender } = render(<SearchBar {...props} searchHistory={history} />);
+    fireEvent.change(screen.getByPlaceholderText('Filter...'), { target: { value: 'hel' } });
+    expect(screen.getAllByRole('link')[0]).toHaveAttribute('href', oldUrl);
+    const later = now + 42 * 24 * 60 * 60 * 1000;
+    clock.mockReturnValue(later);
+    history = recordSearchSelection(history, 'hel', recentUrl, later);
+    rerender(<SearchBar {...props} searchHistory={history} />);
+    expect(screen.getAllByRole('link')[0]).toHaveAttribute('href', recentUrl);
+  });
+
+  it('applies preferences before limiting results, shares configured URLs across labels, and keeps ties stable', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(now);
+    const links = Array.from({ length: 7 }, (_, index) => ({ label: `Help ${index}`, url: `https://a.test/${index}` }));
+    links.push({ label: 'Help renamed duplicate', url: links[6].url });
+    let history = recordSearchSelection([], 'help', links[6].url, now);
+    for (let index = 0; index < 9; index++) history = recordSearchSelection(history, 'help', links[6].url, now);
+    render(<SearchBar enabled placeholder="Filter..." modules={[{ type: 'links', title: 'Tools', links }]} onNavigate={vi.fn()} searchHistory={history} />);
+    fireEvent.change(screen.getByPlaceholderText('Filter...'), { target: { value: 'help' } });
+    const results = screen.getAllByRole('link');
+    expect(results).toHaveLength(5);
+    expect(results[0]).toHaveTextContent('Help 6');
+    expect(results[1]).toHaveTextContent('Help renamed duplicate');
+    expect(results[2]).toHaveTextContent('Help 0');
+    expect(results[3]).toHaveTextContent('Help 1');
+  });
+
+  it('uses exact normalized phrases including punctuation without promoting nonmatches', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(now);
+    const history = recordSearchSelection(recordSearchSelection([], ' HEL! ', helpUrl, now), 'hel!', helpUrl, now);
+    render(<SearchBar enabled placeholder="Filter..." modules={preferenceModules} onNavigate={vi.fn()} searchHistory={history} />);
+    const input = screen.getByPlaceholderText('Filter...');
+    fireEvent.change(input, { target: { value: 'hel' } });
+    expect(screen.getAllByRole('link')[0]).toHaveTextContent('helpful resources');
+    fireEvent.change(input, { target: { value: '  HEL!  ' } });
+    expect(screen.getAllByRole('link')[0]).toHaveTextContent('website - help page');
+    fireEvent.change(input, { target: { value: 'unknown' } });
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
+  it('preserves exact subcommand access and leaves suggested subcommand scores unchanged', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(now);
+    const url = 'https://hel.test/hel';
+    let history = recordSearchSelection([], 'hel', url, now);
+    for (let index = 0; index < 9; index++) history = recordSearchSelection(history, 'hel', url, now);
+    const modules: ModuleConfig[] = [{ type: 'links', title: 'hel', links: [{ label: 'hel', url }] }];
+    const subcommands = [{ trigger: 'hel', name: 'Help command', items: [{ label: 'Action', url }] }];
+    const onSearchSelection = vi.fn();
+    const { rerender } = render(<SearchBar enabled placeholder="Filter..." modules={modules} subcommands={subcommands} onNavigate={vi.fn()} onSearchSelection={onSearchSelection} />);
+    const input = screen.getByPlaceholderText('Filter...');
+    fireEvent.change(input, { target: { value: ' HEL ' } });
+    const before = screen.getAllByRole('link').map((link) => link.textContent);
+    rerender(<SearchBar enabled placeholder="Filter..." modules={modules} subcommands={subcommands} onNavigate={vi.fn()} searchHistory={history} onSearchSelection={onSearchSelection} />);
+    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(before);
+    expect(screen.getAllByRole('link')[0]).toHaveTextContent('Help command');
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByRole('button', { name: 'Exit Help command subcommand' })).toBeInTheDocument();
+    expect(onSearchSelection).not.toHaveBeenCalled();
+  });
+
+  it.each(['click', 'Enter'])('records once before navigation on %s, and does not record highlighting', (activation) => {
+    const onSearchSelection = vi.fn();
+    const onNavigate = vi.fn(() => expect(onSearchSelection).toHaveBeenCalledExactlyOnceWith('hel', helpUrl));
+    render(<SearchBar enabled placeholder="Filter..." modules={preferenceModules} onNavigate={onNavigate} onSearchSelection={onSearchSelection} />);
+    const input = screen.getByPlaceholderText('Filter...');
+    fireEvent.change(input, { target: { value: 'hel' } });
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    expect(onSearchSelection).not.toHaveBeenCalled();
+    if (activation === 'click') fireEvent.click(screen.getAllByRole('link')[1]);
+    else fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onSearchSelection).toHaveBeenCalledTimes(1);
+    expect(onNavigate).toHaveBeenCalledTimes(1);
+  });
+
+  it('never trains on predefined, generated, or add-item subcommand actions', () => {
+    const onSearchSelection = vi.fn();
+    const onNavigate = vi.fn();
+    render(<SearchBar enabled placeholder="Filter..." modules={[]} subcommands={mockSubcommands} onNavigate={onNavigate} onSearchSelection={onSearchSelection} onAddSubcommandItem={vi.fn()} />);
+    const input = screen.getByPlaceholderText('Filter...');
+    fireEvent.change(input, { target: { value: 'ghp' } });
+    fireEvent.keyDown(input, { key: 'Tab' });
+    fireEvent.click(screen.getByText('newtab'));
+    fireEvent.change(input, { target: { value: 'brand' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    fireEvent.click(screen.getByText('Add destination as predefined item'));
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onNavigate).toHaveBeenCalledTimes(2);
+    expect(onSearchSelection).not.toHaveBeenCalled();
   });
 });

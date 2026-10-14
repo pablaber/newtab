@@ -1,7 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App.tsx';
 import { mockConfig } from './test/fixtures.ts';
+import { recordSearchSelection, serializeSearchHistory } from './utils/searchHistory.ts';
+import { searchHistoryStorageKey } from './hooks/useSearchHistory.ts';
 import type { AppConfig, BackgroundConfig } from './types/config.ts';
 
 const STORAGE_KEY = 'newtab-config';
@@ -73,4 +75,38 @@ describe('App foreground resolution', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(fg()).toBe('255, 255, 255');
   });
+});
+
+describe('App search preference reset', () => {
+  beforeEach(() => localStorage.clear());
+
+  it.each(['Save', 'Cancel'])('resets immediately and survives settings %s without entering config or export', async (action) => {
+    const user = userEvent.setup();
+    seedConfig({ color: '#000000' });
+    const key = searchHistoryStorageKey();
+    localStorage.setItem(key, serializeSearchHistory(recordSearchSelection([], 'git', 'https://github.com', Date.now())));
+    render(<App />);
+    await user.click(screen.getByLabelText('Settings'));
+    await user.click(screen.getByRole('button', { name: 'Reset learned search preferences' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Learned search preferences reset.');
+    expect(JSON.parse(localStorage.getItem(key)!).entries).toEqual([]);
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    const exported = (document.querySelector('.config-editor-textarea') as HTMLTextAreaElement).value;
+    expect(JSON.parse(atob(exported))).toEqual(JSON.parse(localStorage.getItem(STORAGE_KEY)!));
+    await user.click(screen.getByRole('button', { name: action }));
+    expect(JSON.parse(localStorage.getItem(key)!).entries).toEqual([]);
+    expect(localStorage.getItem(STORAGE_KEY)).not.toContain('searchHistory');
+  });
+  it('persists an ordinary Enter selection exactly once through the app shell', () => {
+    seedConfig({ color: '#000000' });
+    render(<App />);
+    const input = screen.getByPlaceholderText('Filter links...');
+    fireEvent.change(input, { target: { value: ' Git ' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByText('Navigating to GitHub')).toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem(searchHistoryStorageKey())!).entries).toEqual([
+      expect.objectContaining({ phrase: 'git', url: 'https://github.com', weight: 1 }),
+    ]);
+  });
+
 });

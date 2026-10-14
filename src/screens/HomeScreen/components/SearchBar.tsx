@@ -8,9 +8,11 @@ import type {
 } from '../../../types/config.ts';
 import { resolveSubcommandUrl } from '../../../utils/subcommands.ts';
 import { getFaviconUrl } from '../../../utils/favicon.ts';
+import { EMPTY_SEARCH_HISTORY, searchHistoryBoost, type SearchHistory } from '../../../utils/searchHistory.ts';
 import { scoreLinkMatch, scoreMatch } from './searchScoring.ts';
 
 const MAX_RESULTS = 5;
+const EMPTY_SUBCOMMANDS: SubcommandConfig[] = [];
 
 function isMac(): boolean {
   return /Mac|iPhone|iPad|iPod/.test(navigator.platform);
@@ -23,6 +25,8 @@ interface SearchBarProps {
   modules: ModuleConfig[];
   subcommands?: SubcommandConfig[];
   onNavigate: (url: string, label: string) => void;
+  searchHistory?: SearchHistory;
+  onSearchSelection?: (phrase: string, url: string) => void;
   onAddSubcommandItem?: (trigger: string, item: SubcommandItemConfig) => void;
 }
 
@@ -47,8 +51,10 @@ export function SearchBar({
   hotkeyEnabled = true,
   placeholder,
   modules,
-  subcommands = [],
+  subcommands = EMPTY_SUBCOMMANDS,
   onNavigate,
+  searchHistory = EMPTY_SEARCH_HISTORY,
+  onSearchSelection,
   onAddSubcommandItem,
 }: SearchBarProps) {
   const [query, setQuery] = useState('');
@@ -69,6 +75,10 @@ export function SearchBar({
   const globalMatches = useMemo<GlobalMatch[]>(() => {
     if (!query || scope) return [];
     const scored: { match: GlobalMatch; score: number }[] = [];
+    const exactTrigger = subcommands.some((subcommand) => (
+      subcommand.trigger.toLocaleLowerCase() === query.trim().toLocaleLowerCase()
+    ));
+    const now = Date.now();
 
     if (enabled) {
       for (const module of modules) {
@@ -82,7 +92,7 @@ export function SearchBar({
                 moduleTitle: module.title,
                 favicon: link.icon || getFaviconUrl(link.url),
               },
-              score,
+              score: score + (exactTrigger ? 0 : searchHistoryBoost(searchHistory, query, link.url, now)),
             });
           }
         }
@@ -99,7 +109,7 @@ export function SearchBar({
 
     scored.sort((left, right) => right.score - left.score);
     return scored.slice(0, MAX_RESULTS).map(({ match }) => match);
-  }, [enabled, modules, query, scope, subcommands]);
+  }, [enabled, modules, query, scope, subcommands, searchHistory]);
 
   const scopeItems = useMemo(() => {
     if (!scope || arguments_.length > 0) return [];
@@ -170,6 +180,11 @@ export function SearchBar({
     ? [...arguments_, query.trim()]
     : arguments_;
   const fieldSyntax = scope?.freeform?.fields.map((field) => `<${field.name}>`).join(' ');
+
+  function navigateLink(link: MatchedLink) {
+    onSearchSelection?.(query, link.url);
+    onNavigate(link.url, link.label);
+  }
 
   function startAddItem() {
     if (!candidate) return;
@@ -294,7 +309,7 @@ export function SearchBar({
     const match = globalMatches[selectedIndex];
     if (!match) return;
     if (match.kind === 'subcommand') activateScope(match);
-    else onNavigate(match.url, match.label);
+    else navigateLink(match);
   }
 
   function addRow(url: string, index: number) {
@@ -387,7 +402,7 @@ export function SearchBar({
                   onClick={(event) => {
                     event.preventDefault();
                     if (match.kind === 'subcommand') activateScope(match);
-                    else onNavigate(match.url, match.label);
+                    else navigateLink(match);
                   }}
                 >
                   <span className="search-dropdown-left">

@@ -16,13 +16,15 @@ const FOREGROUND_OPTIONS: { value: ForegroundSetting; label: string }[] = [
 
 interface GeneralTabProps {
   config: AppConfig;
+  onResetSearchHistory?: () => boolean;
   onSave: (config: AppConfig) => void;
   onClose: () => void;
   onPreview: (background: BackgroundConfig) => void;
   onConfigChange: (config: AppConfig) => void;
 }
 
-export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange }: GeneralTabProps) {
+export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange, onResetSearchHistory }: GeneralTabProps) {
+  const [resetResult, setResetResult] = useState('');
   const [imageUrl, setImageUrl] = useState(config.background?.imageUrl ?? '');
   const [appliedImageUrl, setAppliedImageUrl] = useState(config.background?.imageUrl ?? '');
   const [opacity, setOpacity] = useState(config.background?.opacity ?? 0.5);
@@ -260,6 +262,24 @@ export function GeneralTab({ config, onSave, onClose, onPreview, onConfigChange 
               onChange={(e) => setPlaceholder(e.target.value)}
               placeholder="Filter links..."
             />
+          </div>
+        )}
+        {onResetSearchHistory && (
+          <div className="config-editor-field">
+            <p className="config-editor-search-help">
+              Learned search preferences are local to this browser and current account (or guest).
+              Reset takes effect immediately, independently of Save or Cancel.
+            </p>
+            <button
+              type="button"
+              className="config-editor-btn"
+              onClick={() => setResetResult(onResetSearchHistory()
+                ? 'Learned search preferences reset.'
+                : 'Learned search preferences reset for this session. Browser storage is unavailable.')}
+            >
+              Reset learned search preferences
+            </button>
+            <p className="config-editor-search-help" role="status">{resetResult}</p>
           </div>
         )}
       </div>
