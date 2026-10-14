@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useConfig } from './hooks/useConfig.ts';
+import { useSearchHistory } from './hooks/useSearchHistory.ts';
 import { useAdmin } from './hooks/useAdmin.ts';
 import type { BackgroundConfig } from './types/config.ts';
 import { BackgroundLayer } from './components/BackgroundLayer.tsx';
@@ -27,6 +28,7 @@ function App() {
     resolveInitialSync,
     setEditorOpen,
   } = useConfig();
+  const searchHistory = useSearchHistory(account.status === 'signed-in' ? account.userId : undefined);
   const { isSuperAdmin, listInvites, inviteUser } = useAdmin(account);
   const admin = useMemo(
     () => (isSuperAdmin ? { listInvites, inviteUser } : undefined),
@@ -87,6 +89,7 @@ function App() {
           onSave={setConfig}
           onClose={closeSettings}
           onPreview={(bg) => setPreviewBackground(bg ?? null)}
+          onResetSearchHistory={searchHistory.reset}
           initialTab={configTab}
           stageNewSubcommand={stageNewSubcommand}
           accountControls={account.status === 'disabled' ? undefined : {
@@ -115,6 +118,8 @@ function App() {
       <BackgroundLayer background={config.background} />
       <HomeScreen
         config={config}
+        searchHistory={searchHistory.history}
+        onSearchSelection={searchHistory.recordSelection}
         onSaveConfig={setConfig}
         onOpenSettings={() => openSettings('general')}
         onOpenSubcommands={() => openSettings('subcommands', true)}

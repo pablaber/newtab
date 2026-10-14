@@ -5,6 +5,7 @@ import type { AccountState, SyncStatus } from '../../hooks/useConfig.ts';
 import type { AdminActions } from '../../hooks/useAdmin.ts';
 import { isHosted } from '../../env.ts';
 import { getFaviconUrl } from '../../utils/favicon.ts';
+import type { SearchHistory } from '../../utils/searchHistory.ts';
 import { SearchBar } from './components/SearchBar.tsx';
 import { ModuleGrid } from './components/ModuleGrid.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
@@ -13,6 +14,8 @@ import { CommandPalette } from './components/CommandPalette.tsx';
 
 interface HomeScreenProps {
   config: AppConfig;
+  searchHistory?: SearchHistory;
+  onSearchSelection?: (phrase: string, url: string) => void;
   onSaveConfig: (config: AppConfig) => void;
   onOpenSettings: () => void;
   onOpenSubcommands?: () => void;
@@ -25,6 +28,8 @@ interface HomeScreenProps {
 
 export function HomeScreen({
   config,
+  searchHistory,
+  onSearchSelection,
   onSaveConfig,
   onOpenSettings,
   onOpenSubcommands,
@@ -133,6 +138,8 @@ export function HomeScreen({
           hotkeyEnabled={!showCommands && !showAbout && !showAdmin}
           placeholder={config.search?.placeholder ?? 'Filter links...'}
           modules={config.modules}
+          searchHistory={searchHistory}
+          onSearchSelection={onSearchSelection}
           subcommands={config.subcommands}
           onNavigate={handleNavigate}
           onAddSubcommandItem={handleAddSubcommandItem}

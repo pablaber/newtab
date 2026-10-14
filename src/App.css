@@ -1902,3 +1902,14 @@
   font-size: 0.8rem;
   color: rgba(var(--fg), 0.5);
 }
+
+.config-editor-search-help {
+  color: rgba(var(--fg), 0.7);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.config-editor-search-help[role="status"] {
+  margin: 12px 0 0;
+}

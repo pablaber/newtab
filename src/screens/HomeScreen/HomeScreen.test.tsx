@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HomeScreen } from './HomeScreen.tsx';
 import { mockConfig, mockHiddenModule, mockInvites, mockSubcommands } from '../../test/fixtures.ts';
@@ -260,5 +260,13 @@ describe('HomeScreen', () => {
       { label: 'brand', url: 'https://github.com/pablaber/brand' },
     ]);
     expect(saved.subcommands[1]).toEqual(mockSubcommands[1]);
+  });
+
+  it('does not train search history on ordinary module-grid navigation', () => {
+    const onSearchSelection = vi.fn();
+    render(<HomeScreen config={mockConfig} onSaveConfig={vi.fn()} onOpenSettings={vi.fn()} onSearchSelection={onSearchSelection} />);
+    fireEvent.click(screen.getByRole('link', { name: 'GitHub' }));
+    expect(onSearchSelection).not.toHaveBeenCalled();
+    expect(screen.getByText('Navigating to GitHub')).toBeInTheDocument();
   });
 });
