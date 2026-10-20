@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.18.0](https://github.com/pablaber/newtab/compare/v0.17.0...v0.18.0) (2026-10-20)
+
+
+### Features
+
+* add super admin invite modal ([#113](https://github.com/pablaber/newtab/issues/113)) ([80c665a](https://github.com/pablaber/newtab/commit/80c665ab83b4bbb2690881e45db9969a7e0cb748))
+* improve links editor reordering and section management ([#119](https://github.com/pablaber/newtab/issues/119)) ([16b5449](https://github.com/pablaber/newtab/commit/16b544972754340fad1ce645d31bc7194ed059ec))
+* learn local search preferences ([#117](https://github.com/pablaber/newtab/issues/117)) ([dbf82dd](https://github.com/pablaber/newtab/commit/dbf82dd99b3f5995f3d5dc7c26cb9741e4c95beb))
+
+
+### Miscellaneous
+
+* bump the production-dependencies group across 1 directory with 2 updates ([#118](https://github.com/pablaber/newtab/issues/118)) ([fd69b8d](https://github.com/pablaber/newtab/commit/fd69b8d564a1c5e9c33a7b2e0c9df94a5414954c))
+
 ## [0.17.0](https://github.com/pablaber/newtab/compare/v0.16.0...v0.17.0) (2026-09-30)
 
 
