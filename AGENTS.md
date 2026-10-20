@@ -33,7 +33,9 @@ src/
 │       ├── ConfigEditorScreen.tsx — header, tab bar, import/export modal
 │       └── components/
 │           ├── GeneralTab.tsx    — general settings (background + search placeholder)
-│           └── LinksTab.tsx      — section + link CRUD with reordering & validation
+│           ├── LinksTab.tsx      — collapsible sections + link CRUD with reordering & validation
+│           ├── LinkActionsMenu.tsx — per-link "…" menu (move to section)
+│           └── MoveLinkModal.tsx — searchable picker for moving a link to another section
 ├── hooks/
 │   ├── useAdmin.ts        — super-admin status and invite actions
 │   └── useConfig.ts       — fetches /config.json, persists to localStorage
