@@ -1,6 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import type { AppConfig, ModuleConfig } from '../../../types/config.ts';
 import { ensureProtocol, MAX_LINK_LABEL, MAX_SECTION_NAME } from '../../../utils/linkConfig.ts';
+import { LinkActionsMenu } from './LinkActionsMenu.tsx';
+import { MoveLinkModal } from './MoveLinkModal.tsx';
+
+function TrashIcon({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  );
+}
+
+// Swap two indices in a set of expanded section indices
+function swapIndices(set: Set<number>, a: number, b: number) {
+  const next = new Set(set);
+  next.delete(a);
+  next.delete(b);
+  if (set.has(a)) next.add(b);
+  if (set.has(b)) next.add(a);
+  return next;
+}
 
 interface LinksTabProps {
   config: AppConfig;
@@ -15,6 +39,10 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
   );
   const [submitted, setSubmitted] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  // Sections start collapsed; tracks expanded section indices
+  const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
+  const [moving, setMoving] = useState<{ section: number; link: number } | null>(null);
+  const idPrefix = useId();
 
   // Push link changes to the shared draft so they persist across tab switches
   useEffect(() => {
@@ -25,10 +53,29 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
 
   const addSection = () => {
     setModules([{ type: 'links', title: '', links: [] }, ...modules]);
+    setExpanded((current) => new Set([0, ...[...current].map((i) => i + 1)]));
   };
 
   const removeSection = (index: number) => {
     setModules(modules.filter((_, i) => i !== index));
+    setExpanded((current) => new Set(
+      [...current].filter((i) => i !== index).map((i) => (i > index ? i - 1 : i)),
+    ));
+  };
+
+  const toggleSectionExpanded = (index: number) => {
+    setExpanded((current) => {
+      const next = new Set(current);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const allExpanded = modules.length > 0 && modules.every((_, i) => expanded.has(i));
+
+  const toggleAllExpanded = () => {
+    setExpanded(allExpanded ? new Set() : new Set(modules.map((_, i) => i)));
   };
 
   const renameSection = (index: number, title: string) => {
@@ -41,6 +88,7 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
     const next = [...modules];
     [next[index - 1], next[index]] = [next[index], next[index - 1]];
     setModules(next);
+    setExpanded((current) => swapIndices(current, index, index - 1));
   };
 
   const moveSectionDown = (index: number) => {
@@ -48,6 +96,7 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
     const next = [...modules];
     [next[index], next[index + 1]] = [next[index + 1], next[index]];
     setModules(next);
+    setExpanded((current) => swapIndices(current, index, index + 1));
   };
 
   const toggleSectionHidden = (index: number) => {
@@ -97,6 +146,16 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
     }));
   };
 
+  const moveLinkToSection = (fromSection: number, linkIndex: number, toSection: number) => {
+    const link = modules[fromSection].links[linkIndex];
+    setModules(modules.map((m, si) => {
+      if (si === fromSection) return { ...m, links: m.links.filter((_, li) => li !== linkIndex) };
+      if (si === toSection) return { ...m, links: [...m.links, link] };
+      return m;
+    }));
+    setMoving(null);
+  };
+
   const toggleLinkHidden = (sectionIndex: number, linkIndex: number) => {
     setModules(modules.map((m, si) =>
       si === sectionIndex
@@ -141,6 +200,7 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
 
   const handleClearAll = () => {
     setModules([]);
+    setExpanded(new Set());
     setShowClearConfirm(false);
   };
 
@@ -148,7 +208,14 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
 
   const handleSave = () => {
     setSubmitted(true);
-    if (hasErrors) return;
+    if (hasErrors) {
+      // Expand any section with an error so the message is visible
+      setExpanded((current) => new Set([
+        ...current,
+        ...errors.flatMap((e) => (e.section === undefined ? [] : [e.section])),
+      ]));
+      return;
+    }
 
     const cleaned: ModuleConfig[] = modules.map((m) => ({
       ...m,
@@ -187,6 +254,22 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
             Clear All Links
           </button>
         )}
+        {modules.length > 0 && (
+          <button className="config-editor-btn-add" onClick={toggleAllExpanded}>
+            {allExpanded ? (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="7 20 12 15 17 20" />
+                <polyline points="7 4 12 9 17 4" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="7 15 12 20 17 15" />
+                <polyline points="7 9 12 4 17 9" />
+              </svg>
+            )}
+            {allExpanded ? 'Collapse All' : 'Expand All'}
+          </button>
+        )}
         <button
           className="config-editor-btn-add config-editor-btn-save-top"
           onClick={handleSave}
@@ -204,127 +287,20 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
         </div>
       )}
 
-      {modules.map((mod, si) => (
-        <div key={si} className="config-editor-link-section">
-          <div className="config-editor-section-header">
-            <input
-              type="text"
-              className="config-editor-input"
-              value={mod.title}
-              onChange={(e) => renameSection(si, e.target.value)}
-              placeholder="Section name"
-              maxLength={MAX_SECTION_NAME}
-            />
-            <label className="config-editor-checkbox" title={mod.hidden ? 'Hidden — click to show' : 'Visible — click to hide'}>
-              <input
-                type="checkbox"
-                checked={mod.hidden ?? false}
-                onChange={() => toggleSectionHidden(si)}
-              />
-              {mod.hidden ? (
-                <svg className="config-editor-checkbox-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-              ) : (
-                <svg className="config-editor-checkbox-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              )}
-            </label>
-            <button
-              className="config-editor-btn-icon"
-              onClick={() => moveSectionUp(si)}
-              disabled={si === 0}
-              title="Move section up"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="18 15 12 9 6 15" />
-              </svg>
-            </button>
-            <button
-              className="config-editor-btn-icon"
-              onClick={() => moveSectionDown(si)}
-              disabled={si === modules.length - 1}
-              title="Move section down"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            <button
-              className="config-editor-btn-icon danger"
-              onClick={() => removeSection(si)}
-              title="Remove section"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
+      {modules.map((mod, si) => {
+        const isExpanded = expanded.has(si);
+        const bodyId = `${idPrefix}-section-${si}`;
+        const linkCount = mod.links.length;
 
-          {submitted && getFieldError(si, 'title') && (
-            <div className="config-editor-field-error" style={{ marginTop: -8, marginBottom: 8 }}>
-              {getFieldError(si, 'title')}
-            </div>
-          )}
-
-          {mod.links.length > 0 && <div className="config-editor-section-divider" />}
-
-          {mod.links.map((link, li) => (
-            <div key={li} className="config-editor-link-row">
-              <div className="config-editor-link-fields">
-                <input
-                  type="text"
-                  className="config-editor-input"
-                  value={link.label}
-                  onChange={(e) => updateLink(si, li, 'label', e.target.value)}
-                  placeholder="Label"
-                  maxLength={MAX_LINK_LABEL}
-                />
-                {submitted && getFieldError(si, 'label', li) && (
-                  <div className="config-editor-field-error">{getFieldError(si, 'label', li)}</div>
-                )}
-                <input
-                  type="text"
-                  className="config-editor-input"
-                  value={link.url}
-                  onChange={(e) => updateLink(si, li, 'url', e.target.value)}
-                  placeholder="URL (e.g. example.com)"
-                />
-                {submitted && getFieldError(si, 'url', li) && (
-                  <div className="config-editor-field-error">{getFieldError(si, 'url', li)}</div>
-                )}
-              </div>
-              <div className="config-editor-link-actions">
-                <label className="config-editor-checkbox" title={mod.hidden ? 'Section is hidden' : (link.hidden ? 'Hidden — click to show' : 'Visible — click to hide')}>
-                  <input
-                    type="checkbox"
-                    checked={mod.hidden ? true : (link.hidden ?? false)}
-                    onChange={() => toggleLinkHidden(si, li)}
-                    disabled={mod.hidden ?? false}
-                  />
-                  {(mod.hidden || link.hidden) ? (
-                    <svg className="config-editor-checkbox-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg className="config-editor-checkbox-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
-                </label>
+        return (
+          <div key={si} className={`config-editor-link-section${isExpanded ? '' : ' collapsed'}`}>
+            <div className="config-editor-section-header">
+              <div className="config-editor-reorder">
                 <button
                   className="config-editor-btn-icon"
-                  onClick={() => moveLinkUp(si, li)}
-                  disabled={li === 0}
-                  title="Move link up"
+                  onClick={() => moveSectionUp(si)}
+                  disabled={si === 0}
+                  title="Move section up"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="18 15 12 9 6 15" />
@@ -332,37 +308,181 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
                 </button>
                 <button
                   className="config-editor-btn-icon"
-                  onClick={() => moveLinkDown(si, li)}
-                  disabled={li === mod.links.length - 1}
-                  title="Move link down"
+                  onClick={() => moveSectionDown(si)}
+                  disabled={si === modules.length - 1}
+                  title="Move section down"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
+              </div>
+              <button
+                className="config-editor-btn-icon"
+                onClick={() => toggleSectionExpanded(si)}
+                title={isExpanded ? 'Collapse section' : 'Expand section'}
+                aria-expanded={isExpanded}
+                aria-controls={bodyId}
+              >
+                <svg className={`config-editor-chevron${isExpanded ? ' open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+              {isExpanded ? (
+                <input
+                  type="text"
+                  className="config-editor-input"
+                  value={mod.title}
+                  onChange={(e) => renameSection(si, e.target.value)}
+                  placeholder="Section name"
+                  maxLength={MAX_SECTION_NAME}
+                />
+              ) : (
                 <button
-                  className="config-editor-btn-icon danger"
-                  onClick={() => removeLink(si, li)}
-                  title="Remove link"
+                  className={`config-editor-section-title-text${mod.title.trim() ? '' : ' untitled'}`}
+                  onClick={() => toggleSectionExpanded(si)}
+                  aria-expanded={false}
+                  aria-controls={bodyId}
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
+                  {mod.title.trim() || 'Untitled section'}
+                </button>
+              )}
+              <span className="config-editor-link-count">
+                {linkCount} {linkCount === 1 ? 'link' : 'links'}
+              </span>
+              <label className="config-editor-checkbox" title={mod.hidden ? 'Hidden — click to show' : 'Visible — click to hide'}>
+                <input
+                  type="checkbox"
+                  checked={mod.hidden ?? false}
+                  onChange={() => toggleSectionHidden(si)}
+                />
+                {mod.hidden ? (
+                  <svg className="config-editor-checkbox-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
+                ) : (
+                  <svg className="config-editor-checkbox-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </label>
+              <button
+                className="config-editor-btn-icon trash"
+                onClick={() => removeSection(si)}
+                title="Remove section"
+              >
+                <TrashIcon size={14} />
+              </button>
+            </div>
+
+            {submitted && getFieldError(si, 'title') && (
+              <div className="config-editor-field-error" style={{ marginTop: -8, marginBottom: 8 }}>
+                {getFieldError(si, 'title')}
+              </div>
+            )}
+
+            {isExpanded && (
+              <div id={bodyId}>
+                {linkCount > 0 && <div className="config-editor-section-divider" />}
+
+                {mod.links.map((link, li) => (
+                  <div key={li} className="config-editor-link-row">
+                    <div className="config-editor-reorder">
+                      <button
+                        className="config-editor-btn-icon"
+                        onClick={() => moveLinkUp(si, li)}
+                        disabled={li === 0}
+                        title="Move link up"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="18 15 12 9 6 15" />
+                        </svg>
+                      </button>
+                      <button
+                        className="config-editor-btn-icon"
+                        onClick={() => moveLinkDown(si, li)}
+                        disabled={li === linkCount - 1}
+                        title="Move link down"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="config-editor-link-fields">
+                      <input
+                        type="text"
+                        className="config-editor-input"
+                        value={link.label}
+                        onChange={(e) => updateLink(si, li, 'label', e.target.value)}
+                        placeholder="Label"
+                        maxLength={MAX_LINK_LABEL}
+                      />
+                      {submitted && getFieldError(si, 'label', li) && (
+                        <div className="config-editor-field-error">{getFieldError(si, 'label', li)}</div>
+                      )}
+                      <input
+                        type="text"
+                        className="config-editor-input"
+                        value={link.url}
+                        onChange={(e) => updateLink(si, li, 'url', e.target.value)}
+                        placeholder="URL (e.g. example.com)"
+                      />
+                      {submitted && getFieldError(si, 'url', li) && (
+                        <div className="config-editor-field-error">{getFieldError(si, 'url', li)}</div>
+                      )}
+                    </div>
+                    <div className="config-editor-link-actions">
+                      <label className="config-editor-checkbox" title={mod.hidden ? 'Section is hidden' : (link.hidden ? 'Hidden — click to show' : 'Visible — click to hide')}>
+                        <input
+                          type="checkbox"
+                          checked={mod.hidden ? true : (link.hidden ?? false)}
+                          onChange={() => toggleLinkHidden(si, li)}
+                          disabled={mod.hidden ?? false}
+                        />
+                        {(mod.hidden || link.hidden) ? (
+                          <svg className="config-editor-checkbox-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                            <line x1="1" y1="1" x2="23" y2="23" />
+                          </svg>
+                        ) : (
+                          <svg className="config-editor-checkbox-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        )}
+                      </label>
+                      <button
+                        className="config-editor-btn-icon trash"
+                        onClick={() => removeLink(si, li)}
+                        title="Remove link"
+                      >
+                        <TrashIcon size={12} />
+                      </button>
+                      <LinkActionsMenu
+                        canMove={modules.length > 1}
+                        onMoveToSection={() => setMoving({ section: si, link: li })}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <button className="config-editor-btn-add" onClick={() => addLink(si)} style={{ marginTop: 4 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Add Link
                 </button>
               </div>
-            </div>
-          ))}
-
-          <button className="config-editor-btn-add" onClick={() => addLink(si)} style={{ marginTop: 4 }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Add Link
-          </button>
-        </div>
-      ))}
+            )}
+          </div>
+        );
+      })}
 
       <div className="config-editor-actions">
         <button
@@ -375,6 +495,17 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
           Cancel
         </button>
       </div>
+
+      {moving && (
+        <MoveLinkModal
+          linkLabel={modules[moving.section].links[moving.link].label}
+          sections={modules
+            .map((m, index) => ({ index, title: m.title, linkCount: m.links.length, hidden: m.hidden }))
+            .filter(({ index }) => index !== moving.section)}
+          onMove={(toSection) => moveLinkToSection(moving.section, moving.link, toSection)}
+          onClose={() => setMoving(null)}
+        />
+      )}
 
       {showClearConfirm && (
         <div className="config-editor-modal-overlay" onClick={() => setShowClearConfirm(false)}>
