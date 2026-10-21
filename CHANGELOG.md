@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.18.1](https://github.com/pablaber/newtab/compare/v0.18.0...v0.18.1) (2026-10-21)
+
+
+### Miscellaneous
+
+* bump the dev-dependencies group across 1 directory with 8 updates ([#120](https://github.com/pablaber/newtab/issues/120)) ([2611edb](https://github.com/pablaber/newtab/commit/2611edb4131bd1b30c8c0f23df63b3c5f0e006f5))
+* bump vitest from 4.1.11 to 5.0.5 ([#116](https://github.com/pablaber/newtab/issues/116)) ([8293cf5](https://github.com/pablaber/newtab/commit/8293cf5dfae7e398decfc98b368d7147e597202e))
+
 ## [0.18.0](https://github.com/pablaber/newtab/compare/v0.17.0...v0.18.0) (2026-10-20)
 
 
