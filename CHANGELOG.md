@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.2](https://github.com/pablaber/newtab/compare/v0.18.1...v0.18.2) (2026-10-22)
+
+
+### Miscellaneous
+
+* bump the production-dependencies group with 4 updates ([#122](https://github.com/pablaber/newtab/issues/122)) ([c42a62e](https://github.com/pablaber/newtab/commit/c42a62eb366b30189d84612d0592efefca5b994c))
+
 ## [0.18.1](https://github.com/pablaber/newtab/compare/v0.18.0...v0.18.1) (2026-10-21)
 
 
