@@ -3,6 +3,7 @@ import type { AppConfig, ModuleConfig } from '../../../types/config.ts';
 import { ensureProtocol, MAX_LINK_LABEL, MAX_SECTION_NAME } from '../../../utils/linkConfig.ts';
 import { LinkActionsMenu } from './LinkActionsMenu.tsx';
 import { MoveLinkModal } from './MoveLinkModal.tsx';
+import { moveItem, movedIndex, useDragReorder } from '../../../hooks/useDragReorder.ts';
 
 function TrashIcon({ size }: { size: number }) {
   return (
@@ -16,15 +17,21 @@ function TrashIcon({ size }: { size: number }) {
   );
 }
 
-// Swap two indices in a set of expanded section indices
-function swapIndices(set: Set<number>, a: number, b: number) {
-  const next = new Set(set);
-  next.delete(a);
-  next.delete(b);
-  if (set.has(a)) next.add(b);
-  if (set.has(b)) next.add(a);
-  return next;
+function GripIcon({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="9" cy="6" r="1.6" />
+      <circle cx="15" cy="6" r="1.6" />
+      <circle cx="9" cy="12" r="1.6" />
+      <circle cx="15" cy="12" r="1.6" />
+      <circle cx="9" cy="18" r="1.6" />
+      <circle cx="15" cy="18" r="1.6" />
+    </svg>
+  );
 }
+
+const SECTIONS_LIST = 'sections';
+const linksList = (sectionIndex: number) => `links-${sectionIndex}`;
 
 interface LinksTabProps {
   config: AppConfig;
@@ -83,20 +90,9 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
     setModules(modules.map((m, i) => (i === index ? { ...m, title } : m)));
   };
 
-  const moveSectionUp = (index: number) => {
-    if (index === 0) return;
-    const next = [...modules];
-    [next[index - 1], next[index]] = [next[index], next[index - 1]];
-    setModules(next);
-    setExpanded((current) => swapIndices(current, index, index - 1));
-  };
-
-  const moveSectionDown = (index: number) => {
-    if (index >= modules.length - 1) return;
-    const next = [...modules];
-    [next[index], next[index + 1]] = [next[index + 1], next[index]];
-    setModules(next);
-    setExpanded((current) => swapIndices(current, index, index + 1));
+  const moveSection = (from: number, to: number) => {
+    setModules(moveItem(modules, from, to));
+    setExpanded((current) => new Set([...current].map((i) => movedIndex(i, from, to))));
   };
 
   const toggleSectionHidden = (index: number) => {
@@ -126,24 +122,8 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
     ));
   };
 
-  const moveLinkUp = (sectionIndex: number, linkIndex: number) => {
-    if (linkIndex === 0) return;
-    setModules(modules.map((m, si) => {
-      if (si !== sectionIndex) return m;
-      const links = [...m.links];
-      [links[linkIndex - 1], links[linkIndex]] = [links[linkIndex], links[linkIndex - 1]];
-      return { ...m, links };
-    }));
-  };
-
-  const moveLinkDown = (sectionIndex: number, linkIndex: number) => {
-    setModules(modules.map((m, si) => {
-      if (si !== sectionIndex) return m;
-      if (linkIndex >= m.links.length - 1) return m;
-      const links = [...m.links];
-      [links[linkIndex], links[linkIndex + 1]] = [links[linkIndex + 1], links[linkIndex]];
-      return { ...m, links };
-    }));
+  const moveLink = (sectionIndex: number, from: number, to: number) => {
+    setModules(modules.map((m, si) => (si === sectionIndex ? { ...m, links: moveItem(m.links, from, to) } : m)));
   };
 
   const moveLinkToSection = (fromSection: number, linkIndex: number, toSection: number) => {
@@ -155,6 +135,11 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
     }));
     setMoving(null);
   };
+
+  const reorder = useDragReorder((list, from, to) => {
+    if (list === SECTIONS_LIST) moveSection(from, to);
+    else moveLink(Number(list.slice('links-'.length)), from, to);
+  });
 
   const toggleLinkHidden = (sectionIndex: number, linkIndex: number) => {
     setModules(modules.map((m, si) =>
@@ -293,30 +278,21 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
         const linkCount = mod.links.length;
 
         return (
-          <div key={si} className={`config-editor-link-section${isExpanded ? '' : ' collapsed'}`}>
+          <div
+            key={si}
+            className={`config-editor-link-section${isExpanded ? '' : ' collapsed'}${reorder.isDragging(SECTIONS_LIST, si) ? ' dragging' : ''}`}
+            {...reorder.itemProps(SECTIONS_LIST, si)}
+          >
             <div className="config-editor-section-header">
-              <div className="config-editor-reorder">
-                <button
-                  className="config-editor-btn-icon"
-                  onClick={() => moveSectionUp(si)}
-                  disabled={si === 0}
-                  title="Move section up"
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="18 15 12 9 6 15" />
-                  </svg>
-                </button>
-                <button
-                  className="config-editor-btn-icon"
-                  onClick={() => moveSectionDown(si)}
-                  disabled={si === modules.length - 1}
-                  title="Move section down"
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-              </div>
+              <button
+                type="button"
+                className="config-editor-drag-handle"
+                title="Drag to reorder section"
+                aria-label="Reorder section"
+                {...reorder.handleProps(SECTIONS_LIST, si)}
+              >
+                <GripIcon size={14} />
+              </button>
               <button
                 className="config-editor-btn-icon"
                 onClick={() => toggleSectionExpanded(si)}
@@ -389,29 +365,20 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
                 {linkCount > 0 && <div className="config-editor-section-divider" />}
 
                 {mod.links.map((link, li) => (
-                  <div key={li} className="config-editor-link-row">
-                    <div className="config-editor-reorder">
-                      <button
-                        className="config-editor-btn-icon"
-                        onClick={() => moveLinkUp(si, li)}
-                        disabled={li === 0}
-                        title="Move link up"
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="18 15 12 9 6 15" />
-                        </svg>
-                      </button>
-                      <button
-                        className="config-editor-btn-icon"
-                        onClick={() => moveLinkDown(si, li)}
-                        disabled={li === linkCount - 1}
-                        title="Move link down"
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="6 9 12 15 18 9" />
-                        </svg>
-                      </button>
-                    </div>
+                  <div
+                    key={li}
+                    className={`config-editor-link-row${reorder.isDragging(linksList(si), li) ? ' dragging' : ''}`}
+                    {...reorder.itemProps(linksList(si), li)}
+                  >
+                    <button
+                      type="button"
+                      className="config-editor-drag-handle"
+                      title="Drag to reorder link"
+                      aria-label="Reorder link"
+                      {...reorder.handleProps(linksList(si), li)}
+                    >
+                      <GripIcon size={12} />
+                    </button>
                     <div className="config-editor-link-fields">
                       <input
                         type="text"

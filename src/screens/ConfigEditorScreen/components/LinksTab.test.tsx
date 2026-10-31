@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LinksTab } from './LinksTab.tsx';
 import { mockConfig } from '../../../test/fixtures.ts';
@@ -183,23 +183,99 @@ describe('LinksTab', () => {
     render(<LinksTab {...defaultProps} />);
 
     await user.click(screen.getByRole('button', { name: 'Tools' }));
-    await user.click(screen.getAllByRole('button', { name: 'Move section up' })[1]);
+    screen.getAllByRole('button', { name: 'Reorder section' })[1].focus();
+    await user.keyboard('{ArrowUp}');
 
     expect(lastSavedModules().map((m) => m.title)).toEqual(['Tools', 'Favorites']);
     expect(screen.getByDisplayValue('Tools')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Favorites' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Reorder section' })[0]).toHaveFocus();
   });
 
-  it('reorders and removes links', async () => {
+  it('reorders links with the keyboard and removes links', async () => {
     const user = userEvent.setup();
     render(<LinksTab {...defaultProps} />);
 
     await user.click(screen.getByRole('button', { name: 'Favorites' }));
-    await user.click(screen.getAllByRole('button', { name: 'Move link down' })[0]);
+    screen.getAllByRole('button', { name: 'Reorder link' })[0].focus();
+    await user.keyboard('{ArrowDown}');
     expect(lastSavedModules()[0].links.map((l) => l.label)).toEqual(['Hacker News', 'GitHub', 'YouTube']);
 
+    // Moving past either end is a no-op
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    expect(lastSavedModules()[0].links.map((l) => l.label)).toEqual(['Hacker News', 'YouTube', 'GitHub']);
+
     await user.click(screen.getAllByRole('button', { name: 'Remove link' })[2]);
-    expect(lastSavedModules()[0].links.map((l) => l.label)).toEqual(['Hacker News', 'GitHub']);
+    expect(lastSavedModules()[0].links.map((l) => l.label)).toEqual(['Hacker News', 'YouTube']);
+  });
+
+  describe('dragging', () => {
+    // jsdom has no layout: stack every row 40px tall with an 8px gap
+    const layoutRows = (rows: HTMLElement[]) => {
+      rows.forEach((row, i) => {
+        const top = i * 48;
+        vi.spyOn(row, 'getBoundingClientRect').mockReturnValue(
+          { top, bottom: top + 40, height: 40, left: 0, right: 100, width: 100, x: 0, y: top, toJSON: () => ({}) },
+        );
+      });
+    };
+
+    const linkRows = () => screen.getAllByRole('button', { name: 'Reorder link' })
+      .map((handle) => handle.closest('.config-editor-link-row') as HTMLElement);
+
+    it('moves a link to where it is dropped', async () => {
+      const user = userEvent.setup();
+      render(<LinksTab {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: 'Favorites' }));
+      layoutRows(linkRows());
+
+      const handle = screen.getAllByRole('button', { name: 'Reorder link' })[0];
+      fireEvent.pointerDown(handle, { button: 0, clientY: 20 });
+      fireEvent.pointerMove(window, { clientY: 120 });
+
+      const [dragged, second, third] = linkRows();
+      expect(dragged).toHaveClass('dragging');
+      expect(dragged.style.transform).toBe('translateY(100px)');
+      expect(second.style.transform).toBe('translateY(-48px)');
+      expect(third.style.transform).toBe('translateY(-48px)');
+
+      fireEvent.pointerUp(window);
+
+      expect(lastSavedModules()[0].links.map((l) => l.label)).toEqual(['Hacker News', 'YouTube', 'GitHub']);
+      expect(linkRows().every((row) => !row.style.transform && !row.classList.contains('dragging'))).toBe(true);
+    });
+
+    it('cancels a drag on Escape', async () => {
+      const user = userEvent.setup();
+      render(<LinksTab {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: 'Favorites' }));
+      layoutRows(linkRows());
+      const before = defaultProps.onConfigChange.mock.calls.length;
+
+      fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Reorder link' })[0], { button: 0, clientY: 20 });
+      fireEvent.pointerMove(window, { clientY: 120 });
+      fireEvent.keyDown(window, { key: 'Escape' });
+      fireEvent.pointerUp(window);
+
+      expect(defaultProps.onConfigChange.mock.calls.length).toBe(before);
+      expect(linkRows()[0]).not.toHaveClass('dragging');
+    });
+
+    it('moves an expanded section along with its expanded state', async () => {
+      const user = userEvent.setup();
+      render(<LinksTab {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: 'Favorites' }));
+      layoutRows(screen.getAllByRole('button', { name: 'Reorder section' })
+        .map((handle) => handle.closest('.config-editor-link-section') as HTMLElement));
+
+      fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Reorder section' })[0], { button: 0, clientY: 20 });
+      fireEvent.pointerMove(window, { clientY: 80 });
+      fireEvent.pointerUp(window);
+
+      expect(lastSavedModules().map((m) => m.title)).toEqual(['Tools', 'Favorites']);
+      expect(screen.getByRole('button', { name: 'Tools' })).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Favorites')).toBeInTheDocument();
+    });
   });
 
   it('moves a link to another section from the actions menu', async () => {
