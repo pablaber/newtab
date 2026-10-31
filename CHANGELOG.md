@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/pablaber/newtab/compare/v0.18.3...v0.19.0) (2026-10-31)
+
+
+### Features
+
+* drag to reorder links and subcommands ([#127](https://github.com/pablaber/newtab/issues/127)) ([c2f1d0f](https://github.com/pablaber/newtab/commit/c2f1d0f55425df49fc8000b915d82ad0cff0f6aa))
+
 ## [0.18.3](https://github.com/pablaber/newtab/compare/v0.18.2...v0.18.3) (2026-10-31)
 
 
