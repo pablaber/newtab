@@ -1176,6 +1176,15 @@
   box-shadow: 0 0 0 1px rgba(var(--fg), 0.12), 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
+/* Field rows sit in a grid, so the gap lives outside the margin box */
+.subcommand-field-row.dragging {
+  margin: -6px;
+  padding: 6px;
+  border-radius: 10px;
+  background: rgba(var(--dropdown-bg), 0.95);
+  box-shadow: 0 0 0 1px rgba(var(--fg), 0.12), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
 .config-editor-link-section.dragging {
   background: rgba(var(--dropdown-bg), 0.95);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);

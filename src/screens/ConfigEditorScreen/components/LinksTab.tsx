@@ -3,6 +3,7 @@ import type { AppConfig, ModuleConfig } from '../../../types/config.ts';
 import { ensureProtocol, MAX_LINK_LABEL, MAX_SECTION_NAME } from '../../../utils/linkConfig.ts';
 import { LinkActionsMenu } from './LinkActionsMenu.tsx';
 import { MoveLinkModal } from './MoveLinkModal.tsx';
+import { DragHandle } from './DragHandle.tsx';
 import { moveItem, movedIndex, useDragReorder } from '../../../hooks/useDragReorder.ts';
 
 function TrashIcon({ size }: { size: number }) {
@@ -13,19 +14,6 @@ function TrashIcon({ size }: { size: number }) {
       <path d="M10 11v6" />
       <path d="M14 11v6" />
       <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-    </svg>
-  );
-}
-
-function GripIcon({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <circle cx="9" cy="6" r="1.6" />
-      <circle cx="15" cy="6" r="1.6" />
-      <circle cx="9" cy="12" r="1.6" />
-      <circle cx="15" cy="12" r="1.6" />
-      <circle cx="9" cy="18" r="1.6" />
-      <circle cx="15" cy="18" r="1.6" />
     </svg>
   );
 }
@@ -284,15 +272,12 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
             {...reorder.itemProps(SECTIONS_LIST, si)}
           >
             <div className="config-editor-section-header">
-              <button
-                type="button"
-                className="config-editor-drag-handle"
+              <DragHandle
+                size={14}
                 title="Drag to reorder section"
                 aria-label="Reorder section"
                 {...reorder.handleProps(SECTIONS_LIST, si)}
-              >
-                <GripIcon size={14} />
-              </button>
+              />
               <button
                 className="config-editor-btn-icon"
                 onClick={() => toggleSectionExpanded(si)}
@@ -370,15 +355,11 @@ export function LinksTab({ config, onSave, onClose, onConfigChange }: LinksTabPr
                     className={`config-editor-link-row${reorder.isDragging(linksList(si), li) ? ' dragging' : ''}`}
                     {...reorder.itemProps(linksList(si), li)}
                   >
-                    <button
-                      type="button"
-                      className="config-editor-drag-handle"
+                    <DragHandle
                       title="Drag to reorder link"
                       aria-label="Reorder link"
                       {...reorder.handleProps(linksList(si), li)}
-                    >
-                      <GripIcon size={12} />
-                    </button>
+                    />
                     <div className="config-editor-link-fields">
                       <input
                         type="text"

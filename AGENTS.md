@@ -32,6 +32,7 @@ src/
 │       ├── index.ts
 │       ├── ConfigEditorScreen.tsx — header, tab bar, import/export modal
 │       └── components/
+│           ├── DragHandle.tsx    — grip button for drag-to-reorder rows (links + subcommands)
 │           ├── GeneralTab.tsx    — general settings (background + search placeholder)
 │           ├── LinksTab.tsx      — collapsible sections + link CRUD with drag reordering & validation
 │           ├── LinkActionsMenu.tsx — per-link "…" menu (move to section)

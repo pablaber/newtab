@@ -9,6 +9,8 @@ import {
   normalizeSubcommand,
   SUBCOMMAND_IDENTIFIER_PATTERN,
 } from '../../../utils/subcommands.ts';
+import { moveItem, useDragReorder } from '../../../hooks/useDragReorder.ts';
+import { DragHandle } from './DragHandle.tsx';
 
 interface SubcommandsTabProps {
   config: AppConfig;
@@ -28,13 +30,9 @@ interface EditorError {
 
 const blankSubcommand = (): SubcommandConfig => ({ name: '', trigger: '', items: [] });
 
-function move<T>(values: T[], index: number, offset: -1 | 1): T[] {
-  const destination = index + offset;
-  if (destination < 0 || destination >= values.length) return values;
-  const next = [...values];
-  [next[index], next[destination]] = [next[destination], next[index]];
-  return next;
-}
+const SUBCOMMANDS_LIST = 'subcommands';
+const itemsList = (subcommandIndex: number) => `items-${subcommandIndex}`;
+const fieldsList = (subcommandIndex: number) => `fields-${subcommandIndex}`;
 
 export function SubcommandsTab({
   config,
@@ -65,6 +63,17 @@ export function SubcommandsTab({
       valueIndex === index ? transform(value) : value
     )));
   };
+
+  const reorder = useDragReorder((list, from, to) => {
+    if (list === SUBCOMMANDS_LIST) {
+      setSubcommands((current) => moveItem(current, from, to));
+      return;
+    }
+    const [kind, subcommandIndex] = list.split('-');
+    update(Number(subcommandIndex), (value) => (kind === 'items'
+      ? { ...value, items: moveItem(value.items, from, to) }
+      : { ...value, freeform: value.freeform && { ...value.freeform, fields: moveItem(value.freeform.fields, from, to) } }));
+  });
 
   const errors: EditorError[] = [];
   subcommands.forEach((subcommand, subcommandIndex) => {
@@ -162,8 +171,18 @@ export function SubcommandsTab({
       )}
 
       {subcommands.map((subcommand, subcommandIndex) => (
-        <section className="config-editor-link-section subcommand-editor-card" key={subcommandIndex}>
+        <section
+          className={`config-editor-link-section subcommand-editor-card${reorder.isDragging(SUBCOMMANDS_LIST, subcommandIndex) ? ' dragging' : ''}`}
+          key={subcommandIndex}
+          {...reorder.itemProps(SUBCOMMANDS_LIST, subcommandIndex)}
+        >
           <div className="config-editor-section-header">
+            <DragHandle
+              size={14}
+              title="Drag to reorder subcommand"
+              aria-label="Reorder subcommand"
+              {...reorder.handleProps(SUBCOMMANDS_LIST, subcommandIndex)}
+            />
             <div className="subcommand-heading-fields">
               <input
                 className="config-editor-input"
@@ -182,8 +201,6 @@ export function SubcommandsTab({
                 onChange={(event) => update(subcommandIndex, (value) => ({ ...value, trigger: event.target.value }))}
               />
             </div>
-            <button className="config-editor-btn-icon" disabled={subcommandIndex === 0} title="Move subcommand up" onClick={() => setSubcommands(move(subcommands, subcommandIndex, -1))}>↑</button>
-            <button className="config-editor-btn-icon" disabled={subcommandIndex === subcommands.length - 1} title="Move subcommand down" onClick={() => setSubcommands(move(subcommands, subcommandIndex, 1))}>↓</button>
             <button className="config-editor-btn-icon danger" title="Remove subcommand" onClick={() => setSubcommands(subcommands.filter((_, index) => index !== subcommandIndex))}>×</button>
           </div>
           {submitted && errorFor(subcommandIndex, 'name') && <div className="config-editor-field-error">{errorFor(subcommandIndex, 'name')}</div>}
@@ -205,7 +222,16 @@ export function SubcommandsTab({
               </button>
             </div>
             {subcommand.items.map((item, itemIndex) => (
-              <div className="config-editor-link-row" key={itemIndex}>
+              <div
+                className={`config-editor-link-row${reorder.isDragging(itemsList(subcommandIndex), itemIndex) ? ' dragging' : ''}`}
+                key={itemIndex}
+                {...reorder.itemProps(itemsList(subcommandIndex), itemIndex)}
+              >
+                <DragHandle
+                  title="Drag to reorder item"
+                  aria-label="Reorder item"
+                  {...reorder.handleProps(itemsList(subcommandIndex), itemIndex)}
+                />
                 <div className="config-editor-link-fields">
                   <input
                     className="config-editor-input"
@@ -231,8 +257,6 @@ export function SubcommandsTab({
                   {submitted && errorFor(subcommandIndex, 'item-url', itemIndex) && <div className="config-editor-field-error">{errorFor(subcommandIndex, 'item-url', itemIndex)}</div>}
                 </div>
                 <div className="config-editor-link-actions">
-                  <button className="config-editor-btn-icon" disabled={itemIndex === 0} title="Move item up" onClick={() => update(subcommandIndex, (value) => ({ ...value, items: move(value.items, itemIndex, -1) }))}>↑</button>
-                  <button className="config-editor-btn-icon" disabled={itemIndex === subcommand.items.length - 1} title="Move item down" onClick={() => update(subcommandIndex, (value) => ({ ...value, items: move(value.items, itemIndex, 1) }))}>↓</button>
                   <button className="config-editor-btn-icon danger" title="Remove item" onClick={() => update(subcommandIndex, (value) => ({ ...value, items: value.items.filter((_, index) => index !== itemIndex) }))}>×</button>
                 </div>
               </div>
@@ -271,7 +295,16 @@ export function SubcommandsTab({
                   </button>
                 </div>
                 {subcommand.freeform.fields.map((field, fieldIndex) => (
-                  <div className="subcommand-field-row" key={fieldIndex}>
+                  <div
+                    className={`subcommand-field-row${reorder.isDragging(fieldsList(subcommandIndex), fieldIndex) ? ' dragging' : ''}`}
+                    key={fieldIndex}
+                    {...reorder.itemProps(fieldsList(subcommandIndex), fieldIndex)}
+                  >
+                    <DragHandle
+                      title="Drag to reorder field"
+                      aria-label="Reorder field"
+                      {...reorder.handleProps(fieldsList(subcommandIndex), fieldIndex)}
+                    />
                     <div className="config-editor-link-fields">
                       <input
                         className="config-editor-input"
@@ -289,8 +322,6 @@ export function SubcommandsTab({
                       />
                       {submitted && errorFor(subcommandIndex, 'field-name', undefined, fieldIndex) && <div className="config-editor-field-error">{errorFor(subcommandIndex, 'field-name', undefined, fieldIndex)}</div>}
                     </div>
-                    <button className="config-editor-btn-icon" disabled={fieldIndex === 0} title="Move field up" onClick={() => update(subcommandIndex, (value) => ({ ...value, freeform: value.freeform && { ...value.freeform, fields: move(value.freeform.fields, fieldIndex, -1) } }))}>↑</button>
-                    <button className="config-editor-btn-icon" disabled={fieldIndex === subcommand.freeform!.fields.length - 1} title="Move field down" onClick={() => update(subcommandIndex, (value) => ({ ...value, freeform: value.freeform && { ...value.freeform, fields: move(value.freeform.fields, fieldIndex, 1) } }))}>↓</button>
                     <button className="config-editor-btn-icon danger" title="Remove field" onClick={() => update(subcommandIndex, (value) => ({ ...value, freeform: value.freeform && { ...value.freeform, fields: value.freeform.fields.filter((_, index) => index !== fieldIndex) } }))}>×</button>
                   </div>
                 ))}
