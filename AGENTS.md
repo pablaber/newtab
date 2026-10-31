@@ -32,12 +32,14 @@ src/
 │       ├── index.ts
 │       ├── ConfigEditorScreen.tsx — header, tab bar, import/export modal
 │       └── components/
+│           ├── DragHandle.tsx    — grip button for drag-to-reorder rows (links + subcommands)
 │           ├── GeneralTab.tsx    — general settings (background + search placeholder)
-│           ├── LinksTab.tsx      — collapsible sections + link CRUD with reordering & validation
+│           ├── LinksTab.tsx      — collapsible sections + link CRUD with drag reordering & validation
 │           ├── LinkActionsMenu.tsx — per-link "…" menu (move to section)
 │           └── MoveLinkModal.tsx — searchable picker for moving a link to another section
 ├── hooks/
 │   ├── useAdmin.ts        — super-admin status and invite actions
+│   ├── useDragReorder.ts  — pointer drag-to-reorder (plus arrow keys) for vertical lists
 │   └── useConfig.ts       — fetches /config.json, persists to localStorage
 ├── utils/
 │   ├── linkConfig.ts     — shared link constraints and URL normalization

@@ -1137,24 +1137,63 @@
   color: rgba(255, 120, 120, 1);
 }
 
-/* Reorder Arrows — stacked up/down pair on the left of a row */
-.config-editor-reorder {
+/* Drag Handle — grip on the left of a row; drag or use arrow keys to reorder */
+.config-editor-drag-handle {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
   align-self: stretch;
   flex-shrink: 0;
+  width: 24px;
+  min-height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(var(--fg), 0.35);
+  cursor: grab;
+  touch-action: none;
+  transition: background 150ms, color 150ms;
 }
 
-.config-editor-reorder .config-editor-btn-icon {
-  flex: 1;
-  width: 28px;
-  height: auto;
-  min-height: 0;
+.config-editor-drag-handle:hover,
+.config-editor-drag-handle:focus-visible {
+  background: rgba(var(--fg), 0.08);
+  color: rgba(var(--fg), 0.8);
 }
 
-.config-editor-section-header .config-editor-reorder {
-  gap: 2px;
+.config-editor-drag-handle:focus-visible {
+  outline: 2px solid rgba(var(--fg), 0.4);
+  outline-offset: 1px;
+}
+
+/* Pad the lifted row without changing its footprint (net margin stays 8px) */
+.config-editor-link-row.dragging {
+  margin: -6px -6px 2px;
+  padding: 6px;
+  border-radius: 10px;
+  background: rgba(var(--dropdown-bg), 0.95);
+  box-shadow: 0 0 0 1px rgba(var(--fg), 0.12), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Field rows sit in a grid, so the gap lives outside the margin box */
+.subcommand-field-row.dragging {
+  margin: -6px;
+  padding: 6px;
+  border-radius: 10px;
+  background: rgba(var(--dropdown-bg), 0.95);
+  box-shadow: 0 0 0 1px rgba(var(--fg), 0.12), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.config-editor-link-section.dragging {
+  background: rgba(var(--dropdown-bg), 0.95);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+body.is-reordering,
+body.is-reordering * {
+  cursor: grabbing !important;
+  user-select: none;
 }
 
 /* Collapsible Sections */

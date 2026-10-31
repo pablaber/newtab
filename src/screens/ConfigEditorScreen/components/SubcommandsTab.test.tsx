@@ -88,8 +88,10 @@ describe('SubcommandsTab', () => {
     const { onSave } = renderTab();
 
     const secondCard = document.querySelectorAll('.subcommand-editor-card')[1] as HTMLElement;
-    await user.click(within(secondCard).getByTitle('Move subcommand up'));
+    within(secondCard).getByRole('button', { name: 'Reorder subcommand' }).focus();
+    await user.keyboard('{ArrowUp}');
     expect(screen.getByLabelText('Subcommand 1 name')).toHaveValue('GitHub');
+    expect(screen.getAllByRole('button', { name: 'Reorder subcommand' })[0]).toHaveFocus();
 
     const projectCard = document.querySelectorAll('.subcommand-editor-card')[1] as HTMLElement;
     await user.click(within(projectCard).getAllByTitle('Remove item')[0]);
@@ -98,5 +100,56 @@ describe('SubcommandsTab', () => {
     const saved = onSave.mock.calls[0][0] as AppConfig;
     expect(saved.subcommands?.map((value) => value.trigger)).toEqual(['gh', 'ghp']);
     expect(saved.subcommands?.[1].items).toHaveLength(1);
+  });
+
+  describe('dragging', () => {
+    // jsdom has no layout: stack every row 40px tall with an 8px gap
+    const layoutRows = (rows: HTMLElement[]) => {
+      rows.forEach((row, i) => {
+        const top = i * 48;
+        vi.spyOn(row, 'getBoundingClientRect').mockReturnValue(
+          { top, bottom: top + 40, height: 40, left: 0, right: 100, width: 100, x: 0, y: top, toJSON: () => ({}) },
+        );
+      });
+    };
+
+    const dragFirstDown = (handles: HTMLElement[], rowSelector: string) => {
+      layoutRows(handles.map((handle) => handle.closest(rowSelector) as HTMLElement));
+      fireEvent.pointerDown(handles[0], { button: 0, clientY: 20 });
+      fireEvent.pointerMove(window, { clientY: 72 });
+      fireEvent.pointerUp(window);
+    };
+
+    it('reorders subcommands by dragging', async () => {
+      const user = userEvent.setup();
+      const { onSave } = renderTab();
+
+      dragFirstDown(screen.getAllByRole('button', { name: 'Reorder subcommand' }), '.subcommand-editor-card');
+      await user.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+
+      expect((onSave.mock.calls[0][0] as AppConfig).subcommands?.map((value) => value.trigger)).toEqual(['gh', 'ghp']);
+    });
+
+    it('reorders predefined items by dragging', async () => {
+      const user = userEvent.setup();
+      const { onSave } = renderTab();
+
+      dragFirstDown(screen.getAllByRole('button', { name: 'Reorder item' }), '.config-editor-link-row');
+      await user.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+
+      expect((onSave.mock.calls[0][0] as AppConfig).subcommands?.[0].items.map((item) => item.label))
+        .toEqual(['website', 'newtab']);
+    });
+
+    it('reorders freeform fields by dragging', async () => {
+      const user = userEvent.setup();
+      const { onSave } = renderTab();
+
+      const githubCard = document.querySelectorAll('.subcommand-editor-card')[1] as HTMLElement;
+      dragFirstDown(within(githubCard).getAllByRole('button', { name: 'Reorder field' }), '.subcommand-field-row');
+      await user.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+
+      expect((onSave.mock.calls[0][0] as AppConfig).subcommands?.[1].freeform?.fields).toEqual([{ name: 'repo' }, { name: 'account' }]);
+    });
   });
 });
