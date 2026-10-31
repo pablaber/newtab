@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.18.3](https://github.com/pablaber/newtab/compare/v0.18.2...v0.18.3) (2026-10-31)
+
+
+### Miscellaneous
+
+* bump @tanstack/react-hotkeys from 0.15.0 to 0.17.0 in the production-dependencies group ([#125](https://github.com/pablaber/newtab/issues/125)) ([d1e8cf2](https://github.com/pablaber/newtab/commit/d1e8cf234e3ae2d5770a2a511928d941699af0cc))
+* bump the dev-dependencies group with 2 updates ([#124](https://github.com/pablaber/newtab/issues/124)) ([609a537](https://github.com/pablaber/newtab/commit/609a5374d5e3d58afb035264eeb5911a11dc8a49))
+
 ## [0.18.2](https://github.com/pablaber/newtab/compare/v0.18.1...v0.18.2) (2026-10-22)
 
 
